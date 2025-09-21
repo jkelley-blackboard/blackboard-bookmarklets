@@ -2,6 +2,9 @@
 
 This bookmarklet highlights elements on a Blackboard page that have **Analytics IDs**.  
 Hovering over these elements displays their ID in a floating tooltip.
+This can be used to identify the various elements described in Illuminate's CDM_TLM.ultra_events records.
+https://illuminate.blackboard.com/dictionary/entries/entry/CDM_TLM-ULTRA_EVENTS
+These values usually show up in .data:objectId::text
 
 ---
 
