@@ -8,8 +8,8 @@ A collection of **browser bookmarklets** for Blackboard administrators to **anal
 
 | Bookmarklet | Description | Docs |
 |-------------|-------------|------|
-| **Download Privileges** | Export privileges for a System or Course role into a JSON file. | [Download/README.md](download/README.md) |
-| **Compare Privileges** | Compare role privileges with a saved JSON file and highlight mismatches. | [Compare/README.md](compare/README.md) |
+| **Download Privileges** | Export privileges for a System or Course role into a JSON file. | [role_download/README.md](download/README.md) |
+| **Compare Privileges** | Compare role privileges with a saved JSON file and highlight mismatches. | [role_compare/README.md](compare/README.md) |
 
 ---
 
