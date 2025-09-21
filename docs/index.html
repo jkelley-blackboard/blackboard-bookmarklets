@@ -76,6 +76,7 @@
     <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar. Then, click it while on a Blackboard page to run the tool.
   </div>
 
+  <!-- This is where links will be generated dynamically -->
   <div id="links"></div>
 
   <div class="disclaimer">
@@ -84,11 +85,11 @@
   </div>
 
   <script>
+    // Configuration for bookmarklets
     const repoUser = "jkelley-blackboard";
     const repoName = "blackboard-bookmarklets";
     const branch = "main";
 
-    // List of bookmarklets
     const bookmarklets = [
       {
         name: "Blackboard Role Compare",
@@ -107,17 +108,18 @@
     const container = document.getElementById("links");
 
     bookmarklets.forEach(bm => {
-      // Use jsDelivr CDN to serve the bookmarklet file
       const cdnUrl = `https://cdn.jsdelivr.net/gh/${repoUser}/${repoName}@${branch}/${bm.path}`;
-      const bookmarkletHref = `javascript:(function(){var s=document.createElement('script');s.src='${cdnUrl}';document.body.appendChild(s);})();`;
+      const href = `javascript:(function(){var s=document.createElement('script');s.src='${cdnUrl}';document.body.appendChild(s);})();`;
 
       const link = document.createElement("a");
       link.className = "bookmarklet";
-      link.href = bookmarkletHref;
+      link.href = href;
       link.textContent = bm.name;
-
       container.appendChild(link);
     });
+
+    // Debugging check
+    console.log("Bookmarklets loaded:", bookmarklets);
   </script>
 </body>
 </html>
