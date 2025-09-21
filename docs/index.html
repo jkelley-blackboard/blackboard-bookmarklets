@@ -88,7 +88,7 @@
     const repoName = "blackboard-bookmarklets";
     const branch = "main";
 
-    // Add each bookmarklet you want displayed here
+    // List of bookmarklets
     const bookmarklets = [
       {
         name: "Blackboard Role Compare",
@@ -107,8 +107,9 @@
     const container = document.getElementById("links");
 
     bookmarklets.forEach(bm => {
-      const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${bm.path}`;
-      const bookmarkletHref = `javascript:(function(){fetch('${rawUrl}').then(r=>r.text()).then(eval);})();`;
+      // Use jsDelivr CDN to serve the bookmarklet file
+      const cdnUrl = `https://cdn.jsdelivr.net/gh/${repoUser}/${repoName}@${branch}/${bm.path}`;
+      const bookmarkletHref = `javascript:(function(){var s=document.createElement('script');s.src='${cdnUrl}';document.body.appendChild(s);})();`;
 
       const link = document.createElement("a");
       link.className = "bookmarklet";
