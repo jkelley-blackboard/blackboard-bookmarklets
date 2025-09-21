@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blackboard Bookmarklets</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    h1 { color: #333; }
+    .bookmarklet {
+      display: inline-block;
+      padding: 10px 15px;
+      margin: 10px;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: grab;
+    }
+    .bookmarklet:hover {
+      background: #0056b3;
+    }
+    .instructions {
+      background: #fff3cd;
+      padding: 10px;
+      border: 1px solid #ffeeba;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Blackboard Bookmarklets</h1>
+  <div class="instructions">
+    <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar.
+  </div>
+
+  <!-- Example Bookmarklet Link -->
+  <a class="bookmarklet" href="javascript:(function(){alert('Hello from Blackboard!');})();">
+    Test Alert
+  </a>
+
+  <a class="bookmarklet" href="javascript:(function(){fetch('https://raw.githubusercontent.com/jkelley-blackboard/blackboard-bookmarklets/main/role_download/blackboard_role_download_bookmarklet.js').then(r=>r.text()).then(eval);})();">
+    Blackboard Role Download
+  </a>
+
+</body>
+</html>
