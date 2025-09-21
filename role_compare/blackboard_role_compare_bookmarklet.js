@@ -1,4 +1,4 @@
-javascript:(() => {
+(() => {
     // 1. Get iframe document
     const iframe = document.querySelector('iframe[name="bb-base-admin-iframe"]');
     if (!iframe || !iframe.contentDocument) {

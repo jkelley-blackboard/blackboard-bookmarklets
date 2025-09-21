@@ -1,5 +1,4 @@
-// blackboard_analytics_id_hover_bookmarklet.js
-(function() {
+(() => {
     function addTooltip(doc) {
         const tooltip = doc.createElement('div');
         tooltip.style.position = 'fixed';
