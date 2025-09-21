@@ -6,6 +6,13 @@
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
     h1 { color: #333; }
+    .instructions {
+      background: #fff3cd;
+      padding: 10px;
+      border: 1px solid #ffeeba;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
     .bookmarklet {
       display: inline-block;
       padding: 10px 15px;
@@ -16,17 +23,9 @@
       text-decoration: none;
       font-weight: bold;
       cursor: grab;
+      transition: background 0.3s;
     }
-    .bookmarklet:hover {
-      background: #0056b3;
-    }
-    .instructions {
-      background: #fff3cd;
-      padding: 10px;
-      border: 1px solid #ffeeba;
-      border-radius: 5px;
-      margin-bottom: 20px;
-    }
+    .bookmarklet:hover { background: #0056b3; }
   </style>
 </head>
 <body>
@@ -35,14 +34,38 @@
     <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar.
   </div>
 
-  <!-- Example Bookmarklet Link -->
-  <a class="bookmarklet" href="javascript:(function(){alert('Hello from Blackboard!');})();">
-    Test Alert
-  </a>
+  <div id="links"></div>
 
-  <a class="bookmarklet" href="javascript:(function(){fetch('https://raw.githubusercontent.com/jkelley-blackboard/blackboard-bookmarklets/main/role_download/blackboard_role_download_bookmarklet.js').then(r=>r.text()).then(eval);})();">
-    Blackboard Role Download
-  </a>
+  <script>
+    // === CONFIGURATION ===
+    const repoUser = "jkelley-blackboard";
+    const repoName = "blackboard-bookmarklets";
+    const branch = "main";
 
+    // List of bookmarklets to expose on this page
+    const bookmarklets = [
+      {
+        name: "Blackboard Role Compare",
+        path: "role_compare/blackboard_role_compare_bookmarklet.min.bm.js"
+      }
+    ];
+
+    const container = document.getElementById("links");
+
+    bookmarklets.forEach(bm => {
+      const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${bm.path}`;
+      
+      // Bookmarklet code that always pulls the latest version of the script
+      const bookmarkletHref = `javascript:(function(){fetch('${rawUrl}').then(r=>r.text()).then(eval);})();`;
+
+      // Create the link dynamically
+      const link = document.createElement("a");
+      link.className = "bookmarklet";
+      link.href = bookmarkletHref;
+      link.textContent = bm.name;
+
+      container.appendChild(link);
+    });
+  </script>
 </body>
 </html>
