@@ -4,14 +4,30 @@
   <meta charset="UTF-8">
   <title>Blackboard Bookmarklets</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    h1 { color: #333; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; line-height: 1.6; }
+    h1 { color: #333; margin-bottom: 10px; }
+    .description {
+      background: #e9f5ff;
+      padding: 15px;
+      border: 1px solid #b6e0fe;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
     .instructions {
       background: #fff3cd;
       padding: 10px;
       border: 1px solid #ffeeba;
       border-radius: 5px;
       margin-bottom: 20px;
+    }
+    .disclaimer {
+      background: #fdecea;
+      padding: 10px;
+      border: 1px solid #f5c2c7;
+      border-radius: 5px;
+      color: #842029;
+      font-size: 14px;
+      margin-top: 20px;
     }
     .bookmarklet {
       display: inline-block;
@@ -26,27 +42,65 @@
       transition: background 0.3s;
     }
     .bookmarklet:hover { background: #0056b3; }
+    .repo-link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #28a745;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .repo-link:hover { background: #218838; }
   </style>
 </head>
 <body>
   <h1>Blackboard Bookmarklets</h1>
+
+  <div class="description">
+    <p>
+      This project contains a collection of <strong>experimental bookmarklets</strong> for use with 
+      Blackboard Learn. These tools are designed to streamline certain administrative tasks and 
+      improve workflows.
+    </p>
+    <p>
+      All code is open source and available on GitHub. You can view the source or contribute here:
+    </p>
+    <a class="repo-link" href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">
+      View Repository on GitHub
+    </a>
+  </div>
+
   <div class="instructions">
-    <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar.
+    <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar. Then, click it while on a Blackboard page to run the tool.
   </div>
 
   <div id="links"></div>
 
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> These bookmarklets are provided <em>as-is</em>, without support or warranty of any kind. 
+    They are for experimental use only. Use them at your own risk.
+  </div>
+
   <script>
-    // === CONFIGURATION ===
     const repoUser = "jkelley-blackboard";
     const repoName = "blackboard-bookmarklets";
     const branch = "main";
 
-    // List of bookmarklets to expose on this page
+    // Add each bookmarklet you want displayed here
     const bookmarklets = [
       {
         name: "Blackboard Role Compare",
         path: "role_compare/blackboard_role_compare_bookmarklet.min.bm.js"
+      },
+      {
+        name: "Blackboard Role Download",
+        path: "role_download/blackboard_role_download_bookmarklet.min.bm.js"
+      },
+      {
+        name: "Analytics ID Hover",
+        path: "analytics_hover/analytics_hover_bookmarklet.min.bm.js"
       }
     ];
 
@@ -54,11 +108,8 @@
 
     bookmarklets.forEach(bm => {
       const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${bm.path}`;
-      
-      // Bookmarklet code that always pulls the latest version of the script
       const bookmarkletHref = `javascript:(function(){fetch('${rawUrl}').then(r=>r.text()).then(eval);})();`;
 
-      // Create the link dynamically
       const link = document.createElement("a");
       link.className = "bookmarklet";
       link.href = bookmarkletHref;
