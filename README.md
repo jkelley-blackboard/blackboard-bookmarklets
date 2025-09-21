@@ -1,35 +1,36 @@
-# Blackboard Bookmarklets Collection
+# Blackboard Bookmarklets
 
-A collection of **browser bookmarklets** for Blackboard administrators to **analyze, export, and compare role privileges**.
-
----
-
-## Available Bookmarklets
-
-| Bookmarklet | Description | Docs |
-|-------------|-------------|------|
-| **Download Privileges** | Export privileges for a System or Course role into a JSON file. | [role_download/README.md](download/README.md) |
-| **Compare Privileges** | Compare role privileges with a saved JSON file and highlight mismatches. | [role_compare/README.md](compare/README.md) |
+This repository contains a set of bookmarklets for Blackboard administrators to **download, compare, and inspect role privileges** and **view analytics IDs**.
 
 ---
 
-## Quick Start
-1. Open the documentation for the bookmarklet you want to use.
-2. Copy the **minified code** provided.
-3. Create a new browser bookmark:
-   - **Name:** Example → `BB Download Privileges`
-   - **URL:** Paste the code.
-4. Navigate to the correct Blackboard admin page.
-5. Click the bookmarklet to run it.
+## Bookmarklets
+
+| Name | Description | Folder |
+|------|-------------|--------|
+| **Role Download** | Download role privileges to a JSON file for **System** or **Course** roles. | [role_download](./role_download) |
+| **Role Compare** | Compare current role privileges with a previously downloaded JSON file and highlight mismatches. | [role_compare](./role_compare) |
+| **Analytics ID Hover** | Highlight page elements with `data-analytics-id` or `analytics-id` attributes and show their IDs on hover. | [view_analytics_ids](./view_analytics_ids) |
 
 ---
 
-## Goals
-- Provide safe, **read-only tools** for auditing Blackboard role privileges.
-- Keep code **small and efficient** for easy bookmarking.
-- Organize each tool with its own folder and instructions.
+## Usage
+
+Each folder contains:
+
+- The **bookmarklet code** (`.js`)  
+- A **README.md** with usage instructions, JSON format (if applicable), and safety notes
+
+To use a bookmarklet:
+
+1. Copy the code from the `.js` file.
+2. Create a new browser bookmark.
+3. Paste the code as the bookmark URL.
+4. Navigate to the appropriate Blackboard page and click the bookmarklet.
 
 ---
 
-## License
-MIT License – Free for educational and administrative use.
+## Notes
+
+- All bookmarklets are **read-only** and **do not submit any data**.
+- Pagination may prevent full downloads; ensure all privileges are visible before downloading or comparing.
