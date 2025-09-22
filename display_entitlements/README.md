@@ -14,16 +14,7 @@ The **Display Entitlements** bookmarklet helps Blackboard administrators quickly
 ---
 
 ## Installation
-1. Open the hosted index page (if available) or the local docs index:
-[../docs/index.html]
-
-nginx
-Copy code
-or
-https://jkelley-blackboard.github.io/blackboard-bookmarklets
-
-markdown
-Copy code
+1. Open the hosted index page https://jkelley-blackboard.github.io/blackboard-bookmarklets
 2. Find **Display Entitlements** under the **Roles & Entitlements Tools** section.  
 3. Drag the button to your browser's bookmarks bar (or create a new bookmark with the bookmarklet code).
 
@@ -40,37 +31,10 @@ Copy code
 - This tool targets the `bb-base-admin-iframe` iframe. If the iframe is not present or not loaded, you will see:
 "⚠ Go to Admin > Users to manage role privileges."
 
-csharp
-Copy code
 - The bookmarklet also checks you are on the Manage Privileges page inside the iframe by verifying the path includes:
 /webapps/blackboard/execute/managePrivileges
 
-nginx
-Copy code
-If you are not on that page, you will see:
-"⚠ Go to the manage privileges of a course or system role."
 
-yaml
-Copy code
-
----
-
-## Example (visual)
-Before running the bookmarklet:
-Privilege Name	Enabled
-View Course Catalog	[ ]
-Manage Announcements	[ ]
-
-arduino
-Copy code
-
-After running the bookmarklet:
-Privilege Name	Enabled
-View Course Catalog (entitlement_id)	[ ]
-Manage Announcements (entitlement_id)	[ ]
-
-yaml
-Copy code
 
 ---
 
@@ -81,8 +45,6 @@ display_entitlements/
 ├── display_entitlments_original.js # Older/original variant (kept for reference)
 └── README.md # This file
 
-yaml
-Copy code
 
 > **Note:** Filenames in this folder use the `display_entitlments_*` pattern (intentional to match the repo).
 
