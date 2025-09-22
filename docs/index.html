@@ -7,7 +7,12 @@
   <style>
     /* Reset and basics */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f8; color: #333; line-height: 1.6; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      line-height: 1.6;
+    }
 
     header {
       background: #0d6efd;
@@ -15,30 +20,49 @@
       padding: 40px 20px;
       text-align: center;
     }
-    header h1 { font-size: 2rem; margin-bottom: 10px; }
-    header p { font-size: 1rem; max-width: 600px; margin: 0 auto 10px; }
-    header a { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #198754; color: white; border-radius: 5px; text-decoration: none; font-weight: bold; }
+    header h1 { font-size: 2.2rem; margin-bottom: 10px; }
+    header p { font-size: 1rem; max-width: 650px; margin: 0 auto 10px; }
+    header a {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 22px;
+      background: #198754;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
     header a:hover { background: #146c43; }
 
-    main { padding: 30px 20px; max-width: 1000px; margin: 0 auto; }
+    main { padding: 30px 20px; max-width: 1100px; margin: 0 auto; }
 
     .instructions {
       background: #fff3cd;
       border: 1px solid #ffeeba;
       border-radius: 6px;
       padding: 15px;
-      margin-bottom: 25px;
+      margin-bottom: 30px;
       font-size: 1rem;
+    }
+
+    h2.section-title {
+      font-size: 1.4rem;
+      margin: 30px 0 15px;
+      color: #0d6efd;
+      border-bottom: 2px solid #0d6efd;
+      padding-bottom: 5px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 15px;
+      margin-bottom: 30px;
     }
 
     .bookmarklet {
-      display: inline-block;
+      display: block;
       padding: 15px;
       text-align: center;
       background: #0d6efd;
@@ -83,45 +107,57 @@
 
   <main>
     <div class="instructions">
-      <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar. Click it while on a Blackboard page to run the tool.
+      <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar. 
+      Then click it while on a Blackboard page to run the tool.
     </div>
 
-    <div class="grid" id="links">
-      <!-- Bookmarklet buttons will be generated here -->
-    </div>
+    <!-- Roles & Entitlements -->
+    <h2 class="section-title">Roles &amp; Entitlements Tools</h2>
+    <div class="grid" id="roles-entitlements"></div>
+
+    <!-- Analytics -->
+    <h2 class="section-title">Analytics Tools</h2>
+    <div class="grid" id="analytics-tools"></div>
 
     <div class="disclaimer">
       <strong>Disclaimer:</strong> These bookmarklets are <em>experimental</em> and provided as-is, without support or warranty. Use at your own risk.
     </div>
   </main>
 
+  <footer>
+    &copy; 2025 Blackboard Bookmarklets Project
+  </footer>
 
   <script>
     const repoUser = "jkelley-blackboard";
     const repoName = "blackboard-bookmarklets";
     const branch = "main";
 
-    const bookmarklets = [
-      {
-        name: "Blackboard Role Compare",
-        path: "role_compare/blackboard_role_compare_bookmarklet.min.bm.js"
-      },
-      {
-        name: "Blackboard Role Download",
-        path: "role_download/blackboard_role_download_bookmarklet.min.bm.js"
-      },
-      {
-        name: "Analytics ID Hover",
-        path: "analytics_hover/analytics_hover_bookmarklet.min.bm.js"
-      }
-    ];
+    const groups = {
+      rolesEntitlements: [
+        {
+          name: "Role Compare",
+          path: "role_compare/blackboard_role_compare_bookmarklet.min.bm.js"
+        },
+        {
+          name: "Role Download",
+          path: "role_download/blackboard_role_download_bookmarklet.min.bm.js"
+        },
+        {
+          name: "Display Entitlements",
+          path: "display_entitlements/display_entitlments_bookmarklet.min.bk.js"
+        }
+      ],
+      analytics: [
+        {
+          name: "Analytics ID Hover",
+          path: "view_analytics_ids/blackboard_analytics_id_hover_bookmarklet.min.bm.js"
+        }
+      ]
+    };
 
-    const container = document.getElementById("links");
-
-    // Fetch each bookmarklet file and embed its contents into href
-    bookmarklets.forEach(bm => {
+    const createBookmarkletLink = (bm, containerId) => {
       const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${bm.path}`;
-
       fetch(rawUrl)
         .then(res => {
           if (!res.ok) throw new Error(`Failed to fetch ${bm.name}`);
@@ -133,10 +169,14 @@
           link.className = "bookmarklet";
           link.href = href;
           link.textContent = bm.name;
-          container.appendChild(link);
+          document.getElementById(containerId).appendChild(link);
         })
         .catch(err => console.error("Error loading bookmarklet:", bm.name, err));
-    });
+    };
+
+    // Populate bookmarklet sections
+    groups.rolesEntitlements.forEach(bm => createBookmarkletLink(bm, "roles-entitlements"));
+    groups.analytics.forEach(bm => createBookmarkletLink(bm, "analytics-tools"));
   </script>
 </body>
 </html>
