@@ -151,10 +151,10 @@
       <div class="grid" id="roles-links"></div>
     </div>
 
-    <!-- Analytics Tools -->
+    <!-- Other Tools -->
     <div class="section">
-      <h2>Analytics Tools</h2>
-      <div class="grid" id="analytics-links"></div>
+      <h2>)Other Tools</h2>
+      <div class="grid" id="other-links"></div>
     </div>
 
     <div class="disclaimer">
@@ -187,12 +187,16 @@
       }
     ];
 
-    // Analytics-related tools
-    const analyticsBookmarklets = [
+    // Other tools
+    const OtherBookmarklets = [
       {
         name: "Analytics ID Hover",
         path: "view_analytics_ids/blackboard_analytics_id_hover_bookmarklet.min.bm.js"
-      }
+      },
+	  {
+        name: "User Details",
+        path: "user_details/user_details_bookmarklet.min.bk.js"
+      } 
     ];
 
     /**
@@ -223,7 +227,7 @@
 
     // Render sections
     renderBookmarklets(rolesBookmarklets, "roles-links");
-    renderBookmarklets(analyticsBookmarklets, "analytics-links");
+    renderBookmarklets(OtherBookmarklets, "other-links");
   </script>
 </body>
 </html>
