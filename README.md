@@ -8,7 +8,7 @@ These lightweight tools can be added to your browser bookmarks and run directly 
 ## 🌐 Live Bookmarklet Page
 The easiest way to access and install the bookmarklets is via the **live index page**:
 
-**[➡ Blackboard Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/docs/index.html)**
+**[➡ Blackboard Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/)**
 
 From there, you can drag and drop bookmarklet buttons into your bookmarks bar.
 
@@ -28,7 +28,7 @@ When clicked, it executes directly in the context of the page you're viewing.
 
 ## 🚀 How to Install
 
-1. Visit the **[Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/docs/index.html)**.
+1. Visit the **[Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/)**.
 2. Drag a bookmarklet button from the page to your browser's **bookmarks bar**.
 3. Navigate to the appropriate page in Blackboard Learn (see tool descriptions below).
 4. Click the bookmarklet to execute it.
