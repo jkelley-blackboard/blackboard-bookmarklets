@@ -1,36 +1,58 @@
 # Blackboard Bookmarklets
 
-This repository contains a set of bookmarklets for Blackboard administrators to **download, compare, and inspect role privileges** and **view analytics IDs**.
+A collection of **experimental bookmarklets** designed to help Blackboard Learn administrators and support teams streamline workflows.  
+These lightweight tools can be added to your browser bookmarks and run directly from any Blackboard page.
 
 ---
 
-## Bookmarklets
+## 🌐 Live Bookmarklet Page
+The easiest way to access and install the bookmarklets is via the **live index page**:
 
-| Name | Description | Folder |
-|------|-------------|--------|
-| **Role Download** | Download role privileges to a JSON file for **System** or **Course** roles. | [role_download](./role_download) |
-| **Role Compare** | Compare current role privileges with a previously downloaded JSON file and highlight mismatches. | [role_compare](./role_compare) |
-| **Analytics ID Hover** | Highlight page elements with `data-analytics-id` or `analytics-id` attributes and show their IDs on hover. | [view_analytics_ids](./view_analytics_ids) |
+**[➡ Blackboard Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/docs/index.html)**
 
----
-
-## Usage
-
-Each folder contains:
-
-- The **bookmarklet code** (`.js`)  
-- A **README.md** with usage instructions, JSON format (if applicable), and safety notes
-
-To use a bookmarklet:
-
-1. Copy the code from the `.js` file.
-2. Create a new browser bookmark.
-3. Paste the code as the bookmark URL.
-4. Navigate to the appropriate Blackboard page and click the bookmarklet.
+From there, you can drag and drop bookmarklet buttons into your bookmarks bar.
 
 ---
 
-## Notes
+## 📖 What Are Bookmarklets?
 
-- All bookmarklets are **read-only** and **do not submit any data**.
-- Pagination may prevent full downloads; ensure all privileges are visible before downloading or comparing.
+A **bookmarklet** is a small JavaScript program stored as a browser bookmark.  
+When clicked, it executes directly in the context of the page you're viewing.
+
+> **Why use bookmarklets?**  
+> - No installation required.
+> - No browser extensions or special permissions needed.
+> - Easy to share and maintain.
+
+---
+
+## 🚀 How to Install
+
+1. Visit the **[Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/docs/index.html)**.
+2. Drag a bookmarklet button from the page to your browser's **bookmarks bar**.
+3. Navigate to the appropriate page in Blackboard Learn (see tool descriptions below).
+4. Click the bookmarklet to execute it.
+
+> ⚠ **Tip:**  
+> If you don’t see your bookmarks bar, enable it in your browser settings.
+
+---
+
+## 🧰 Available Tools
+
+### Roles & Entitlements
+| Bookmarklet | Description |
+|-------------|-------------|
+| **Display Entitlements** | Shows all entitlements (privileges) assigned to a specific role in a clean, easy-to-read overlay. |
+| **Role Download** | Downloads role and privilege data as a file for reporting or analysis. |
+| **Role Compare** | Compare privileges between two roles to quickly identify differences. |
+
+### Analytics
+| Bookmarklet | Description |
+|-------------|-------------|
+| **Analytics ID Hover** | Displays internal Blackboard IDs when hovering over elements like courses, users, or enrollments. Useful for analytics and troubleshooting. |
+
+---
+
+## 🗂 Repository Structure
+
