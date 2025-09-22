@@ -52,17 +52,6 @@ When clicked, it executes directly in the context of the page you're viewing.
 |-------------|-------------|
 | **Analytics ID Hover** | Displays internal Blackboard IDs when hovering over elements like courses, users, or enrollments. Useful for analytics and troubleshooting. |
 
----
-
-## 🗂 Repository Structure
-
-blackboard-bookmarklets/
-├── display_entitlements/ # Display Entitlements bookmarklet source
-├── role_compare/ # Role Compare bookmarklet source
-├── role_download/ # Role Download bookmarklet source
-├── view_analytics_ids/ # Analytics ID Hover bookmarklet source
-└── docs/
-└── index.html # Main public-facing index page
 
 ---
 
