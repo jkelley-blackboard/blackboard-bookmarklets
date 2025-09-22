@@ -56,3 +56,42 @@ When clicked, it executes directly in the context of the page you're viewing.
 
 ## 🗂 Repository Structure
 
+blackboard-bookmarklets/
+├── display_entitlements/ # Display Entitlements bookmarklet source
+├── role_compare/ # Role Compare bookmarklet source
+├── role_download/ # Role Download bookmarklet source
+├── view_analytics_ids/ # Analytics ID Hover bookmarklet source
+└── docs/
+└── index.html # Main public-facing index page
+
+---
+
+## ⚠ Disclaimer
+
+These bookmarklets are **experimental** and provided **as-is**, **without warranty or support**.  
+Use them at your own risk and **only** in non-production or test environments until thoroughly verified.
+
+- They are not officially supported by Blackboard or Anthology.
+- Always follow your institution’s IT policies before using external tools.
+
+---
+
+## 🤝 Contributing
+
+If you’d like to contribute improvements or new bookmarklets:
+
+1. Fork this repository.
+2. Create a new branch for your feature or fix.
+3. Submit a pull request with details about the change.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License.  
+See the [LICENSE](LICENSE) file for details.
+
+---
+
+**Created by:** [Jeff Kelley](https://github.com/jkelley-blackboard)  
+Part of ongoing work to explore lightweight administrative tooling for Blackboard Learn.
