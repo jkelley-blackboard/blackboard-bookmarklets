@@ -1,5 +1,4 @@
 (() => {
-  // 1. Get iframe document
   const iframe = document.querySelector('iframe[name="bb-base-admin-iframe"]');
   if (!iframe || !iframe.contentDocument) {
     alert("⚠ Go to Admin > Users > Users to run this.");
@@ -8,18 +7,13 @@
 
   const doc = iframe.contentDocument;
   const host = doc.location.origin;
-
-  // 2. Check correct page
   const requiredPath = "/webapps/blackboard/execute/userManager";
   if (!doc.location.pathname.includes(requiredPath)) {
     alert("⚠ Go to Admin > Users > Users to run this.");
     return;
   }
 
-  // 3. Create scoped cache
   const cache = {};
-
-  // 4. Add Clear button if not already present
   const clearButtonId = "clearProfileInfoIcons";
   if (!doc.querySelector(`#${clearButtonId}`)) {
     const clearBtn = doc.createElement("button");
@@ -47,7 +41,6 @@
     doc.body.appendChild(clearBtn);
   }
 
-  // 5. Inject icons before each profileCardAvatarThumb span
   const spans = doc.querySelectorAll("span.profileCardAvatarThumb");
   spans.forEach(span => {
     if (span.previousSibling?.classList?.contains("profile-info-icon")) return;
@@ -71,7 +64,7 @@
       }
 
       icon.title = "Loading...";
-      const apiUrl = `${host}/learn/api/public/v1/users/userName:${encodeURIComponent(username)}?fields=externalId,lastLogin`;
+      const apiUrl = `${host}/learn/api/public/v1/users/userName:${encodeURIComponent(username)}?fields=id,externalId,lastLogin,userName,created`;
 
       fetch(apiUrl)
         .then(response => {
@@ -79,8 +72,9 @@
           return response.json();
         })
         .then(data => {
-          const formattedDate = data.lastLogin ? new Date(data.lastLogin).toLocaleString() : "N/A";
-          const info = `External ID: ${data.externalId || "N/A"}\nLast Login: ${formattedDate}`;
+          const lastLogin = data.lastLogin ? new Date(data.lastLogin).toLocaleString() : "N/A";
+          const created = data.created ? new Date(data.created).toLocaleString() : "N/A";
+          const info = `User ID: ${data.id || "N/A"}\nExternal ID: ${data.externalId || "N/A"}\nLast Login: ${lastLogin}\nDate Created: ${created}`;
           icon.title = info;
           cache[username] = info;
         })
