@@ -91,13 +91,16 @@
           grid.className = "grid";
 
           bms.forEach(bm => {
+            const container = document.createElement("div");
+            container.className = "bookmarklet-container";
+
             const link = document.createElement("a");
             link.className = "bookmarklet";
             link.textContent = bm.label;
             link.title = bm.description;
             link.target = "_blank";
 
-        const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/refs/heads/${branch}/${bm.path}`;
+            const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/refs/heads/${branch}/${bm.path}`;
             fetch(rawUrl)
               .then(res => {
                 if (!res.ok) throw new Error(`File not found: ${bm.path}`);
@@ -109,7 +112,19 @@
                 link.href = `javascript:alert('Bookmarklet not found: ${bm.label}')`;
               });
 
-            grid.appendChild(link);
+            container.appendChild(link);
+
+            // Add 📘 link to readme.md
+            const readmeLink = document.createElement("a");
+            const toolId = bm.id || bm.path.split('/')[0];
+            readmeLink.href = `https://github.com/${repoUser}/${repoName}/blob/${branch}/docs/${toolId}/readme.md`;
+            readmeLink.textContent = "📘";
+            readmeLink.target = "_blank";
+            readmeLink.style.marginLeft = "8px";
+            readmeLink.style.fontSize = "0.9em";
+            container.appendChild(readmeLink);
+
+            grid.appendChild(container);
           });
 
           section.appendChild(grid);
