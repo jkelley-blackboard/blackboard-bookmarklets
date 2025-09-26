@@ -5,163 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blackboard Bookmarklets</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <style>
-    /* Reset & basic styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-      background: #ffffff;
-      color: #1c1c1c;
-      line-height: 1.6;
-    }
-
-    /* Header */
-    header {
-      background: #0a2342; /* Anthology dark blue */
-      color: white;
-      padding: 60px 20px;
-      text-align: center;
-    }
-    header h1 {
-      font-size: 2.5rem;
-      font-weight: 600;
-      margin-bottom: 15px;
-    }
-    header p {
-      font-size: 1.2rem;
-      max-width: 650px;
-      margin: 0 auto;
-      opacity: 0.9;
-    }
-    header a {
-      display: inline-block;
-      margin-top: 25px;
-      padding: 12px 30px;
-      background: #ff6b35; /* Anthology accent orange */
-      color: white;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: background 0.3s ease;
-    }
-    header a:hover {
-      background: #e65c2f;
-    }
-
-    /* Main layout */
-    main {
-      padding: 40px 20px;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    /* Instructions */
-    .instructions {
-      background: #f5f7fa;
-      border: 1px solid #e0e4eb;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 40px;
-      font-size: 1rem;
-    }
-
-    /* Section Titles */
-    .section {
-      margin-bottom: 50px;
-    }
-    .section h2 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: #0a2342;
-      border-bottom: 2px solid #e0e4eb;
-      padding-bottom: 8px;
-    }
-
-    /* Bookmarklet grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-
-    /* Bookmarklet buttons */
-    .bookmarklet {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #0a2342;
-      color: white;
-      text-align: center;
-      padding: 18px 15px;
-      border-radius: 10px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      cursor: grab;
-      font-size: 1.05rem;
-    }
-    .bookmarklet:hover {
-      background: #142f5f;
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Disclaimer */
-    .disclaimer {
-      background: #fff4f2;
-      color: #7a1c1c;
-      border: 1px solid #f5d0cd;
-      border-radius: 8px;
-      padding: 20px;
-      margin-top: 40px;
-      font-size: 0.95rem;
-    }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      font-size: 0.85rem;
-      color: #666;
-      margin: 40px 0 20px;
-    }
-  </style>
+  <!-- External CSS -->
+  <link rel="stylesheet" href="groovy_index.css">
 </head>
 <body>
-
   <header>
-    <h1>Blackboard Bookmarklets</h1>
-    <p>Experimental tools to enhance Blackboard workflows and administrative tasks.</p>
-    <a href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">View Repository on GitHub</a>
+    <div class="header-container">
+      <h1>Blackboard Bookmarklets</h1>
+      <a href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">View Repository on GitHub</a>
+    </div>
   </header>
 
-  <main>
-    <div class="instructions">
-      <strong>To install:</strong> Drag one of the buttons below to your bookmarks bar, then click it while on a Blackboard page to run the tool.
-    </div>
+  <div class="main-wrapper">
+    <!-- Sidebar for categories -->
+    <aside class="sidebar">
+      <h3>Categories</h3>
+      <ul id="category-links">
+        <!-- Populated dynamically -->
+      </ul>
+    </aside>
 
-    <!-- Roles & Entitlements Tools -->
-    <div class="section">
-      <h2>Roles &amp; Entitlements Tools</h2>
-      <div class="grid" id="roles-links"></div>
-    </div>
+    <!-- Main content -->
+    <main class="content">
+      <div class="instructions note">
+        <strong>To install:</strong> Drag a button to your bookmarks bar, then click it on a Blackboard page to run the tool.
+      </div>
 
-    <!-- Other Tools -->
-    <div class="section">
-      <h2>Other Tools</h2>
-      <div class="grid" id="other-links"></div>
-    </div>
+      <!-- Sections populated dynamically -->
+      <div id="bookmarklet-sections"></div>
 
-    <div class="disclaimer">
-      <strong>Disclaimer:</strong> These bookmarklets are <em>experimental</em> and provided as-is, without support or warranty. Use at your own risk.</br>
-	  Bookmarklets are fragile by nature.  Little changes to Blackboard may render them unusable.
-    </div>
-  </main>
+      <div class="disclaimer note">
+        <strong>Disclaimer:</strong> These bookmarklets are <em>experimental</em> and provided as-is, without support or warranty. Use at your own risk.<br>
+        Bookmarklets may break if Blackboard updates their interface or URLs.
+      </div>
+    </main>
+  </div>
 
   <footer>
     &copy; 2025 Anthology Inc. and its affiliates. All rights reserved.
@@ -171,64 +49,67 @@
     const repoUser = "jkelley-blackboard";
     const repoName = "blackboard-bookmarklets";
     const branch = "main";
+    const jsonPath = "bookmarklets.json"; // External JSON file
 
-    // Role-related tools: Display Entitlements first, Role Compare last
-    const rolesBookmarklets = [
-      {
-        name: "Display Entitlements",
-        path: "display_entitlements/display_entitlments_bookmarklet.min.bk.js"
-      },
-      {
-        name: "Blackboard Role Download",
-        path: "role_download/blackboard_role_download_bookmarklet.min.bm.js"
-      },
-      {
-        name: "Blackboard Role Compare",
-        path: "role_compare/blackboard_role_compare_bookmarklet.min.bm.js"
-      }
-    ];
+    fetch(jsonPath)
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to fetch ${jsonPath}`);
+        return res.json();
+      })
+      .then(bookmarklets => {
+        // Group bookmarklets by category
+        const categories = {};
+        bookmarklets.forEach(bm => {
+          if (!categories[bm.category]) categories[bm.category] = [];
+          categories[bm.category].push(bm);
+        });
 
-    // Other tools
-    const OtherBookmarklets = [
-      {
-        name: "Analytics ID Hover",
-        path: "view_analytics_ids/blackboard_analytics_id_hover_bookmarklet.min.bm.js"
-      },
-	  {
-        name: "User Details",
-        path: "user_details/user_details_bookmarklet.min.bk.js"
-      } 
-    ];
+        // Render sidebar links
+        const categoryLinks = document.getElementById("category-links");
+        Object.keys(categories).forEach(cat => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = `#${cat.replace(/\s+/g,"-")}`;
+          a.textContent = cat;
+          li.appendChild(a);
+          categoryLinks.appendChild(li);
+        });
 
-    /**
-     * Build bookmarklet buttons dynamically
-     */
-    function renderBookmarklets(bookmarklets, containerId) {
-      const container = document.getElementById(containerId);
+        // Render sections with bookmarklets
+        const sectionsContainer = document.getElementById("bookmarklet-sections");
+        Object.entries(categories).forEach(([cat, bms]) => {
+          const section = document.createElement("div");
+          section.className = "section";
+          section.id = cat.replace(/\s+/g,"-");
 
-      bookmarklets.forEach(bm => {
-        const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${bm.path}`;
+          const h2 = document.createElement("h2");
+          h2.textContent = cat;
+          section.appendChild(h2);
 
-        fetch(rawUrl)
-          .then(res => {
-            if (!res.ok) throw new Error(`Failed to fetch ${bm.name}`);
-            return res.text();
-          })
-          .then(code => {
-            const href = `javascript:${code.trim()}`;
+          const grid = document.createElement("div");
+          grid.className = "grid";
+
+          bms.forEach(bm => {
             const link = document.createElement("a");
             link.className = "bookmarklet";
-            link.href = href;
-            link.textContent = bm.name;
-            container.appendChild(link);
-          })
-          .catch(err => console.error("Error loading bookmarklet:", bm.name, err));
-      });
-    }
+            link.textContent = bm.label;
+            link.title = bm.description;
 
-    // Render sections
-    renderBookmarklets(rolesBookmarklets, "roles-links");
-    renderBookmarklets(OtherBookmarklets, "other-links");
+            // Build URL for raw JS from GitHub
+            const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${bm.path}`;
+            fetch(rawUrl)
+              .then(res => res.ok ? res.text() : Promise.reject(res.status))
+              .then(code => link.href = `javascript:${code.trim()}`)
+              .catch(err => console.error("Error loading bookmarklet:", bm.label, err));
+
+            grid.appendChild(link);
+          });
+
+          section.appendChild(grid);
+          sectionsContainer.appendChild(section);
+        });
+      })
+      .catch(err => console.error("Error fetching bookmarklets JSON:", err));
   </script>
 </body>
 </html>
