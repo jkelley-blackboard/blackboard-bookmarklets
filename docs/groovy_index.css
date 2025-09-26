@@ -176,7 +176,7 @@ code {
   color: #222;
 }
 
-/* ---- Bookmarklet Buttons ---- */
+/* ---- Bookmarklet Links (Styled as Buttons) ---- */
 .bookmarklet {
   display: inline-flex;
   align-items: center;
