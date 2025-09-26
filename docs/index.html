@@ -1,137 +1,131 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blackboard Bookmarklets</title>
-  <link rel="stylesheet" href="groovy_index.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Blackboard Bookmarklets</title>
+<link href="groovy_index.css" rel="stylesheet"/>
 </head>
 <body>
-  <header>
-    <div class="header-container">
-      <h1>Blackboard Bookmarklets</h1>
-      <a href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">View Repository</a>
-    </div>
-  </header>
-
-  <div class="main-wrapper">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <h3>Categories</h3>
-      <ul id="category-links">
-        <!-- Dynamically populated -->
-      </ul>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="content">
-      <section class="note">
-        <strong>About Bookmarklets:</strong>
-        <ul>
-          <li><strong>Fragility:</strong> They rely on Blackboard's structure and may break after updates.</li>
-          <li><strong>Risk:</strong> Execute JavaScript directly; only use trusted sources.</li>
-          <li><strong>Flexibility:</strong> Drag links to your bookmarks bar and use on Blackboard pages.</li>
-        </ul>
+<header>
+<div class="header-container">
+<h1>Blackboard Bookmarklets</h1>
+<a href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">View Repository</a>
+</div>
+</header>
+<div class="main-wrapper">
+<!-- Sidebar -->
+<aside class="sidebar">
+<h3>Categories</h3>
+<ul id="category-links">
+<!-- Dynamically populated -->
+</ul>
+</aside>
+<!-- Main Content -->
+<main class="content">
+<section class="note">
+<strong>About Bookmarklets:</strong>
+<ul>
+<li><strong>Fragility:</strong> They rely on Blackboard's structure and may break after updates.</li>
+<li><strong>Risk:</strong> Execute JavaScript directly; only use trusted sources.</li>
+<li><strong>Flexibility:</strong> Drag links to your bookmarks bar and use on Blackboard pages.</li>
+</ul>
+</section>
+<section class="instructions note">
+<strong>To install:</strong> Drag a link below to your bookmarks bar.
       </section>
-
-      <section class="instructions note">
-        <strong>To install:</strong> Drag a link below to your bookmarks bar.
-      </section>
-
-      <!-- Bookmarklet sections dynamically generated -->
-      <div id="bookmarklet-sections"></div>
-
-      <div class="disclaimer note">
-        <strong>Disclaimer:</strong> These bookmarklets are experimental and provided as-is. Use at your own risk.
+<!-- Bookmarklet sections dynamically generated -->
+<div id="bookmarklet-sections"></div>
+<div class="disclaimer note">
+<strong>Disclaimer:</strong> These bookmarklets are experimental and provided as-is. Use at your own risk.
       </div>
-    </main>
-  </div>
-
-  <footer>
-    &copy; 2025 Anthology Inc. All rights reserved.
+</main>
+</div>
+<footer>
+    © 2025 Anthology Inc. All rights reserved.
   </footer>
+<script>
+const repoUser = "jkelley-blackboard";
+const repoName = "blackboard-bookmarklets";
+const branch = "main";
+const jsonPath = "bookmarklets.json";
 
-  <script>
-    const repoUser = "jkelley-blackboard";
-    const repoName = "blackboard-bookmarklets";
-    const branch = "main";
-    const jsonPath = "bookmarklets.json";
+fetch(jsonPath)
+  .then(res => res.json())
+  .then(bookmarklets => {
+    const categories = {};
+    bookmarklets.forEach(bm => {
+      if (!categories[bm.category]) categories[bm.category] = [];
+      categories[bm.category].push(bm);
+    });
 
-    fetch(jsonPath)
-      .then(res => res.json())
-      .then(bookmarklets => {
-        const categories = {};
-        bookmarklets.forEach(bm => {
-          if (!categories[bm.category]) categories[bm.category] = [];
-          categories[bm.category].push(bm);
-        });
+    const categoryLinks = document.getElementById("category-links");
+    const sectionsContainer = document.getElementById("bookmarklet-sections");
 
-        const categoryLinks = document.getElementById("category-links");
-        const sectionsContainer = document.getElementById("bookmarklet-sections");
+    Object.entries(categories).forEach(([cat, bms]) => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = `#${cat.replace(/\s+/g,"-")}`;
+      a.textContent = cat;
+      li.appendChild(a);
+      categoryLinks.appendChild(li);
 
-        Object.entries(categories).forEach(([cat, bms]) => {
-          // Sidebar link
-          const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.href = `#${cat.replace(/\s+/g,"-")}`;
-          a.textContent = cat;
-          li.appendChild(a);
-          categoryLinks.appendChild(li);
+      const section = document.createElement("section");
+      section.className = "section";
+      section.id = cat.replace(/\s+/g,"-");
 
-          // Section in main content
-          const section = document.createElement("section");
-          section.className = "section";
-          section.id = cat.replace(/\s+/g,"-");
+      const h2 = document.createElement("h2");
+      h2.textContent = cat;
+      section.appendChild(h2);
 
-          const h2 = document.createElement("h2");
-          h2.textContent = cat;
-          section.appendChild(h2);
+      const grid = document.createElement("div");
+      grid.className = "grid";
 
-          const grid = document.createElement("div");
-          grid.className = "grid";
+      bms.forEach(bm => {
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.alignItems = "center";
+        container.style.gap = "8px";
 
-          bms.forEach(bm => {
-            const container = document.createElement("div");
-            container.className = "bookmarklet-container";
+        const link = document.createElement("a");
+        link.className = "bookmarklet";
+        link.textContent = bm.label;
+        link.title = bm.description;
+        link.target = "_blank";
 
-            const link = document.createElement("a");
-            link.className = "bookmarklet";
-            link.textContent = bm.label;
-            link.title = bm.description;
-            link.target = "_blank";
-
-            const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/refs/heads/${branch}/${bm.path}`;
-            fetch(rawUrl)
-              .then(res => {
-                if (!res.ok) throw new Error(`File not found: ${bm.path}`);
-                return res.text();
-              })
-              .then(code => link.href = `javascript:${encodeURIComponent(code.trim())}`)
-              .catch(err => {
-                console.error("Error loading bookmarklet:", bm.label, err);
-                link.href = `javascript:alert('Bookmarklet not found: ${bm.label}')`;
-              });
-
-            container.appendChild(link);
-
-            // Add 📘 link to readme.md
-            const readmeLink = document.createElement("a");
-            const toolId = bm.id || bm.path.split('/')[0];
-            readmeLink.href = `https://github.com/${repoUser}/${repoName}/blob/${branch}/docs/${toolId}/readme.md`;
-            readmeLink.textContent = "📘";
-            readmeLink.target = "_blank";
-            readmeLink.style.marginLeft = "8px";
-            readmeLink.style.fontSize = "0.9em";
-            container.appendChild(readmeLink);
-
-            grid.appendChild(container);
+        const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/refs/heads/${branch}/${bm.path}`;
+        fetch(rawUrl)
+          .then(res => {
+            if (!res.ok) throw new Error(`File not found: ${bm.path}`);
+            return res.text();
+          })
+          .then(code => link.href = `javascript:${encodeURIComponent(code.trim())}`)
+          .catch(err => {
+            console.error("Error loading bookmarklet:", bm.label, err);
+            link.href = `javascript:alert('Bookmarklet not found: ${bm.label}')`;
           });
 
-          section.appendChild(grid);
-          sectionsContainer.appendChild(section);
-        });
-      })
-      .catch(err => console.error("Error loading bookmarklets.json:", err));
-  </script>
+        container.appendChild(link);
+
+        // 📘 link to readme.md
+        const readmeLink = document.createElement("a");
+        readmeLink.textContent = "📘";
+        readmeLink.target = "_blank";
+        readmeLink.style.fontSize = "0.9em";
+
+        const folder = bm.path.split("/")[0];
+        readmeLink.href = `https://github.com/${repoUser}/${repoName}/tree/${branch}/${folder}#readme`;
+
+        container.appendChild(readmeLink);
+        grid.appendChild(container);
+      });
+
+      section.appendChild(grid);
+      sectionsContainer.appendChild(section);
+    });
+  })
+  .catch(err => console.error("Error loading bookmarklets.json:", err));
+</script>
 </body>
 </html>
