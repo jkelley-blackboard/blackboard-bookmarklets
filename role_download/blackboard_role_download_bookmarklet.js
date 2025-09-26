@@ -1,149 +1,135 @@
 (() => {
-    // ----- 1. Get iframe document -----
-    const iframe = document.querySelector('iframe[name="bb-base-admin-iframe"]');
-    if (!iframe || !iframe.contentDocument) {
+    // ===== 1. Access iframe / verify page =====
+    const f = document.querySelector('iframe[name="bb-base-admin-iframe"]');
+    if (!f || !f.contentDocument) {
         alert("⚠ Go to Admin > Users to manage role privileges.");
         return;
     }
-    const doc = iframe.contentDocument;
+    const d = f.contentDocument;
 
-    // ----- 2. Verify page -----
-    if (!doc.location.pathname.includes("/webapps/blackboard/execute/managePrivileges")) {
-        const msg = doc.createElement("div");
-        msg.style.position = "fixed";
-        msg.style.top = "20px";
-        msg.style.background = "#fff";
-        msg.style.border = "1px solid red";
-        msg.style.padding = "10px";
-        msg.style.minWidth = "280px";
-        msg.style.zIndex = "9999";
-        msg.innerHTML = "⚠ Go to the manage privileges of a course or system role.";
-        doc.body.appendChild(msg);
+    if (!d.location.pathname.includes("/webapps/blackboard/execute/managePrivileges")) {
+        const msg = d.createElement("div");
+        msg.style = "position:fixed;top:20px;background:#fff0f0;border:1px solid red;padding:10px;min-width:280px;z-index:9999;border-radius:6px;text-align:center;font-weight:bold;";
+        msg.innerText = "⚠ Go to the manage privileges of a course or system role.";
+        d.body.appendChild(msg);
         msg.style.left = ((window.innerWidth - msg.offsetWidth) / 2) + "px";
         return;
     }
 
-    // ----- 3. Styles -----
-    const panelStyle = `
-        position:fixed;
-        top:20px;
-        z-index:9999;
-        background:#ffffcc;
-        border:4px solid black;
-        border-radius:6px;
-        padding:12px;
-        cursor:move;
-        min-width:320px;
-        overflow:auto;
-        box-shadow:2px 2px 6px rgba(0,0,0,0.2);
-    `;
-    const buttonStyle = `
-        margin:4px;
-        padding:6px 12px;
-        font-size:14px;
-        border-radius:4px;
-        border:1px solid #666;
-        background:#f9f9f9;
-        cursor:pointer;
-        transition:all 0.2s;
-        outline:none;
-    `;
+    // ===== 2. Styles =====
+    const panelStyle = "position:fixed;top:20px;z-index:9999;background:#fdfdfd;border:2px solid #666;border-radius:8px;padding:14px;cursor:move;min-width:350px;overflow:auto;box-shadow:3px 3px 8px rgba(0,0,0,0.25);font-family:sans-serif;";
+    const buttonStyle = "margin:4px;padding:6px 14px;font-size:14px;border-radius:6px;border:1px solid #888;background:#f0f0f0;cursor:pointer;transition:all 0.2s;outline:none;";
 
-    // ----- 4. Draggable panel -----
-    const makeDraggable = (el) => {
-        let x1=0,y1=0,x2=0,y2=0;
+    // ===== 3. Make draggable =====
+    function makeDraggable(el) {
+        let x1 = 0, y1 = 0, oX = 0, oY = 0;
         el.onmousedown = (e) => {
             e.preventDefault();
-            x2 = e.clientX; y2 = e.clientY;
-            doc.onmouseup = () => { doc.onmouseup=null; doc.onmousemove=null; };
-            doc.onmousemove = (e) => {
+            x1 = e.clientX;
+            y1 = e.clientY;
+            d.onmouseup = () => { d.onmouseup = null; d.onmousemove = null; };
+            d.onmousemove = (e) => {
                 e.preventDefault();
-                x1 = x2 - e.clientX; y1 = y2 - e.clientY;
-                x2 = e.clientX; y2 = e.clientY;
-                el.style.top = (el.offsetTop - y1) + "px";
-                el.style.left = (el.offsetLeft - x1) + "px";
+                oX = x1 - e.clientX;
+                oY = y1 - e.clientY;
+                x1 = e.clientX;
+                y1 = e.clientY;
+                el.style.top = (el.offsetTop - oY) + "px";
+                el.style.left = (el.offsetLeft - oX) + "px";
             };
         };
-    };
-
-    // ----- 5. Create panel -----
-    const panel = doc.createElement("div");
-    panel.id = "dlPanel";
-    panel.style = panelStyle;
-    panel.innerHTML = `
-        <div id="details"></div>
-        <div id="paginationWarning"></div>
-        <div id="buttonContainer"></div>
-    `;
-    doc.body.appendChild(panel);
-    makeDraggable(panel);
-    panel.style.left = ((window.innerWidth - panel.offsetWidth)/2) + "px";
-
-    // ----- 6. Pagination check -----
-    const urlParams = new URLSearchParams(doc.location.search);
-    const roleType = urlParams.get("type") || "Unknown";
-    const allShown = urlParams.get("showAll") === "true";
-    const warnDiv = doc.getElementById("paginationWarning");
-    if (!allShown) {
-        warnDiv.innerHTML = "⚠ Click Show All before downloading.";
-        return;
-    } else {
-        warnDiv.innerHTML = "";
     }
 
-    // ----- 7. Add buttons -----
-    const buttonContainer = doc.getElementById("buttonContainer");
+    // ===== 4. Create floating panel =====
+    const panel = d.createElement("div");
+    panel.id = "dlPanel";
+    panel.style = panelStyle;
+    d.body.appendChild(panel);
+    makeDraggable(panel);
+    panel.style.left = ((window.innerWidth - panel.offsetWidth) / 2) + "px";
+
+    const detailsDiv = d.createElement("div");
+    detailsDiv.id = "details";
+    panel.appendChild(detailsDiv);
+
+    const warnDiv = d.createElement("div");
+    warnDiv.id = "paginationWarning";
+    panel.appendChild(warnDiv);
+
+    const buttonContainer = d.createElement("div");
+    buttonContainer.id = "buttonContainer";
+    panel.appendChild(buttonContainer);
+
+    // ===== 5. Extract role / system data =====
+    const urlParams = new URLSearchParams(d.location.search);
+    const roleType = urlParams.get("type") || "Unknown";
+    const allShown = urlParams.get("showAll") === "true";
+    if (!allShown) {
+        warnDiv.innerText = "⚠ Click Show All before downloading.";
+        return;
+    }
+
+    const header = d.querySelector("#pageTitleHeader");
+    const roleName = header ? header.innerText.split(":").pop().trim() : "Unknown";
+    const bbDeployment = location.hostname;
+    const timestamp = new Date().toISOString();
+
+    const bbVersion = (() => {
+        const base = window.parent.document.querySelector("base[href*='/ultra/uiv']");
+        if (!base) return "Unknown";
+        const match = base.href.match(/uiv([\d\.]+-rel\.\d+)/);
+        return match ? match[1] : "Unknown";
+    })();
+
+    detailsDiv.innerHTML = `<b>Role Type:</b>${roleType}<br><b>bbDeployment:</b>${bbDeployment}<br><b>Role:</b>${roleName}<br><b>Blackboard Version:</b>${bbVersion}<br><b>Timestamp:</b>${timestamp}<hr>`;
+
+    // ===== 6. Add button helper =====
     const addButton = (label, handler) => {
-        const btn = doc.createElement("button");
+        const btn = d.createElement("button");
         btn.textContent = label;
         btn.style = buttonStyle;
+        btn.onmouseover = () => { btn.style.background = "#e0e0e0"; };
+        btn.onmouseout = () => { btn.style.background = "#f0f0f0"; };
         btn.onclick = handler;
         buttonContainer.appendChild(btn);
     };
 
-    // ----- 8. Render details in panel -----
-    const detailsDiv = doc.getElementById("details");
-    const roleName = (doc.querySelector("#pageTitleHeader")?.innerText || "Unknown").split(":").pop().trim();
-    const timestamp = new Date().toISOString();
-    detailsDiv.innerHTML = `
-        <b>Role Type:</b> ${roleType}<br>
-        <b>System:</b> ${location.hostname}<br>
-        <b>Role:</b> ${roleName}<br>
-        <b>Timestamp:</b> ${timestamp}
-        <hr>
-    `;
-
-    // ----- 9. Download JSON -----
+    // ===== 7. Add Download JSON button =====
     addButton("Download JSON", () => {
-        const rows = doc.querySelectorAll("tbody#listContainer_databody>tr");
+        const rows = d.querySelectorAll("tbody#listContainer_databody>tr");
         const privileges = {};
-        rows.forEach((tr) => {
-            const name = tr.querySelector("th div")?.innerText.trim();
-            const entitlement = tr.querySelector('input[type="checkbox"]')?.value;
-            const imgSrc = tr.querySelector("td:nth-child(2) img")?.getAttribute("src") || "";
-            const status = imgSrc.includes("checkmark") ? "permitted" :
-                           imgSrc.includes("dash") ? "inherited" : "restricted";
-            if (name && entitlement) privileges[name.replace(/^"+|"+$/g,"")] = { status, entitlement };
+        rows.forEach(tr => {
+            const nameEl = tr.querySelector("th div");
+            const name = nameEl ? nameEl.innerText.trim() : null;
+            const entitlementEl = tr.querySelector('input[type="checkbox"]');
+            const entitlement = entitlementEl ? entitlementEl.value : null;
+            const img = tr.querySelector("td:nth-child(2) img");
+            const imgSrc = img ? img.getAttribute("src") : "";
+            const status = imgSrc.includes("checkmark") ? "permitted" : imgSrc.includes("dash") ? "inherited" : "restricted";
+            if (name && entitlement) {
+                privileges[name.replace(/^"+|"+$/g, "")] = { status, entitlement };
+            }
         });
 
         const data = {
-            roleType,
-            system: location.hostname,
-            role: roleName,
-            timestamp,
+            source: {
+                roleType,
+                bbDeployment,
+                role: roleName,
+                timestamp,
+                bbVersion
+            },
             privileges
         };
 
-        const blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = doc.createElement("a");
-        a.href = url;
-        a.download = `bb_${roleType.toLowerCase()}_priv_${roleName.replace(/\s+/g,"_")}.json`;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const a = d.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `bb_${roleType.toLowerCase()}_priv_${roleName.replace(/\s+/g, "_")}.json`;
         a.click();
     });
 
-    // ----- 10. Refresh frame -----
-    addButton("Refresh Frame", () => {
-        iframe.contentWindow.location.reload();
-    });
+    // ===== 8. Add Refresh Frame button =====
+    addButton("Refresh Frame", () => { f.contentWindow.location.reload(); });
+
 })();
