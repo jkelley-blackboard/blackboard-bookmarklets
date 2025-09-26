@@ -14,11 +14,6 @@ Hovering over the tooltip fetches some addtional information using the REST API
 
 ---
 
-## Usage
-
-TBD - will add to the drag and drop page
----
-
 ## Safety Notes
 
 - **Read-only:** The bookmarklet only reads IDs and adds temporary outlines and tooltips.
