@@ -2,31 +2,31 @@
   {
     "label": "Display Entitlements",
     "description": "Displays entitlements for all system roles on the current Blackboard page.",
-    "path": "bookmarklets/display_entitlements.bk.min.js",
+    "path": "display_entitlements/blackboard_display_entitlements.bk.min.js",
     "category": "Roles & Entitlements Tools"
   },
   {
     "label": "Blackboard Role Compare",
     "description": "Compares system roles against a JSON file to highlight mismatches.",
-    "path": "bookmarklets/role_compare.bk.min.js",
+    "path": "role_compare/blackboard_role_compare_bookmarklet.min.bm.js",
     "category": "Roles & Entitlements Tools"
   },
   {
     "label": "Blackboard Role Download",
     "description": "Downloads all system roles and their entitlements as a JSON file.",
-    "path": "bookmarklets/role_download.bk.min.js",
+    "path": "role_download/blackboard_role_download_bookmarklet.min.bm.js",
     "category": "Roles & Entitlements Tools"
   },
   {
     "label": "Analytics ID Hover",
     "description": "Displays the Analytics ID when hovering over course links.",
-    "path": "bookmarklets/analytics_id_hover.bk.min.js",
+    "path": "analytics_id_hover/blackboard_analytics_id_hover_bookmarklet.min.bm.js",
     "category": "Other Tools"
   },
   {
     "label": "User Details",
     "description": "Shows detailed user information on Blackboard pages.",
-    "path": "bookmarklets/user_details.bk.min.js",
+    "path": "user_details/blackboard_user_details_bookmarklet.min.bm.js",
     "category": "Other Tools"
   }
 ]
