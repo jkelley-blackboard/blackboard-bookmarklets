@@ -97,7 +97,7 @@
             link.title = bm.description;
             link.target = "_blank";
 
-            const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${bm.path}`;
+        const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/refs/heads/${branch}/${bm.path}`;
             fetch(rawUrl)
               .then(res => {
                 if (!res.ok) throw new Error(`File not found: ${bm.path}`);
