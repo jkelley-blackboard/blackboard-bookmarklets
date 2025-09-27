@@ -1,102 +1,127 @@
-# Bookmarklet Expansion & Minification Guidance
+# Bookmarklet Development & Distribution Guidance
 
-**Purpose:** Ensure bookmarklets are readable for development, maintainable, and safe to convert into one-line minified versions.
+**Purpose:** Provide consistent practices for building, maintaining, and distributing all bookmarklets in this repository.
 
 ---
 
-## 1. CSS / Style Strings
+## 1. Repository Structure & Naming
 
-* Always single-line.
-* Reason: multi-line template literals can break minified bookmarklets.
-* Example:
+Each bookmarklet tool lives in its own folder:
 
-```javascript
-const buttonStyle = "margin:4px;padding:6px 12px;font-size:14px;border-radius:4px;border:1px solid #666;background:#f9f9f9;cursor:pointer;transition:all 0.2s;outline:none;";
-const panelStyle = "position:fixed;top:20px;z-index:9999;background:#ffffcc;border:4px solid black;border-radius:6px;padding:12px;cursor:move;min-width:320px;overflow:auto;box-shadow:2px 2px 6px rgba(0,0,0,0.2);";
+```
+(tool_name)/
+   (tool_name).js           # Expanded source (source of truth)
+   (tool_name).min.bk.js    # Minified one-liner for bookmark URL
+   README.md                # Tool-specific usage instructions
 ```
 
 ---
 
-## 2. JavaScript Logic
+## 2. Best Practices for Code & UI
 
-* Keep expanded: indentation, descriptive variable names, and comments.
-* Example:
+- **Expanded source**:
+  - Readable, commented, and auditable.
+  - Keep inline CSS **single-line** to avoid breaking minified bookmarklets.
+  - Use minimal UI: plain buttons, small floating panel.
+  - Escape user-supplied text before injecting into `innerHTML`.
+
+- **Quoting strategy**:
+  - Avoid unescaped quotes inside JS strings.
+  - If needed, escape (`\"` or `\'`) or use `&quot;` for HTML attributes.
+  - Prevent syntax errors like `Unexpected identifier 'Liberation'` by ensuring font-family stacks or attributes don’t break string delimiters.
+
+- **Raw characters**:
+  - Use raw characters (⚠, …, `\n`) for clarity and compactness.
+  - Avoid HTML entities unless required for parsing safety.
+
+---
+
+## 3. Minification Rules
+
+- **Expanded version**:
+  - Keep descriptive names and comments.
+  - Single-line inline CSS.
+  - Include error handling and validation.
+
+- **Minified one-liner (`*.min.bk.js`)**:
+  - Remove comments and extra whitespace.
+  - Keep `javascript:(...)` prefix for bookmarklets.
+  - Validate by pasting into DevTools Console before distribution.
+
+---
+
+## 4. URL Length Reality Check
+
+- The old **2,000-character limit** is outdated. Modern browsers allow **tens of thousands of characters** in bookmarklets.
+- Chrome, Edge, and Firefox handle large one-liners; iOS Safari may truncate very long URLs.
+- Real blockers today: **CSP**, **iframe isolation**, or **policy blocking `javascript:`**, not length.
+
+---
+
+## 5. Error Handling
+
+- **Page checks**:
+  - Not on expected page → “Go to the correct page…”
+  - Missing required state (e.g., pagination) → “Show All is required…”
+
+- **JSON ingestion**:
+  - Parse errors → “JSON parse error: …”
+  - Missing keys → “Invalid JSON: missing required fields.”
+
+- **DOM changes**:
+  - If selectors fail, show a clear alert and log details to console.
+
+---
+
+## 6. DOM Data Extraction (Generic Example)
+
+When extracting data from the page, use a **priority-based approach**:
 
 ```javascript
-const addButton = (label, handler) => {
-    const btn = doc.createElement("button");
-    btn.textContent = label;
-    btn.style = buttonStyle; // single-line CSS
-    btn.onclick = handler;
-    buttonContainer.appendChild(btn);
-};
+function getKeyFromRow(tr) {
+  // 1) Primary source (e.g., checkbox value)
+  const cb = tr.querySelector('input[type="checkbox"]');
+  if (cb && cb.value) return cb.value;
+
+  // 2) Data attributes
+  const attr = tr.getAttribute('data-key') || tr.dataset.key;
+  if (attr) return attr;
+
+  // 3) Fallback: text content or ID pattern
+  const text = (tr.querySelector('th')?.innerText || '').trim();
+  return text || null;
+}
 ```
 
----
-
-## 3. Functional Blocks
-
-Separate code into clear sections for maintainability:
-
-1. Access iframe / verify page
-2. Create floating panel
-3. Make panel draggable
-4. Extract role / system data
-5. Build buttons and actions
+Adapt this logic per tool requirements.
 
 ---
 
-## 4. Data Extraction & Download
+## 7. Distribution
 
-* Keep JSON structure clear and explicit.
-* Include relevant metadata (`roleType`, `system`/`bbDeployment`, `role`, `timestamp`, `source`, `privileges`).
-* Example:
-
-```javascript
-const data = { roleType, system: bbDeployment, role: roleName, timestamp, source: bbVersion, privileges };
-```
+- **Preferred:** A single **self-contained one-liner** (`*.min.bk.js`) pasted into a bookmark’s URL field.
+- **No external loader**: Avoid cross-origin fetch due to CSP and policy restrictions.
+- Keep the expanded source in the repo for auditing and maintenance.
 
 ---
 
-## 5. Raw Characters
+## 8. Testing Checklist
 
-* **Always use raw characters** (`⚠`, `<b>`, `<br>`, `<hr>`) for `innerHTML`.
-* Never use HTML entities like `&amp;`, `&lt;`, `&gt;`.
-* Escape only user-generated input if needed.
-
----
-
-## 6. Expanded vs Minified Workflow
-
-### Expanded Version
-
-* Fully readable and maintainable.
-* Descriptive variable names.
-* Comments explaining functional blocks.
-* Single-line CSS.
-* Raw characters in innerHTML.
-* **Not limited to 2000 characters**.
-* Serves as the “source of truth” for testing.
-
-### Minified Version
-
-* Generated from the tested expanded version.
-* Must follow these rules:
-
-  1. Remove optional spaces and semicolons.
-  2. Shorten local variable names safely (`iframe → f`, `doc → d`, etc.).
-  3. Remove JSON pretty-printing (`JSON.stringify(data)` vs `JSON.stringify(data,null,2)`).
-  4. Preserve all functionality and raw characters.
-  5. Ensure **under 2000 characters** for bookmarklet safety.
+1. Navigate to the correct page and ensure required state (e.g., **Show All**).
+2. Run the bookmarklet → Panel appears.
+3. Verify:
+   - Buttons perform expected actions.
+   - Data extraction works (e.g., keys, names).
+   - Downloaded JSON matches schema.
+   - Upload/compare logic flags mismatches correctly.
+4. Filters and UI controls behave as documented.
 
 ---
 
-## 7. Summary Rules
+## 9. Troubleshooting
 
-* CSS → single-line
-* JS logic → expanded & commented
-* Functional blocks → separated
-* Raw characters → always, never HTML entities
-* Expanded version → source of truth
-* Minified version → <2000 characters, short vars, no pretty JSON
-* Test expanded version thoroughly before minifying
+- **Syntax errors** → Check for unescaped quotes in inline CSS or HTML strings.
+- **No data extracted** → Inspect DOM; update selectors or fallback logic.
+- **Bookmarklet won’t run** → Check for CSP or `javascript:` blocking.
+- **Very long one-liner** → Modern browsers allow it; if issues persist, test in DevTools Console.
+

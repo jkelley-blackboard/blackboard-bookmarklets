@@ -3,6 +3,8 @@
    **Action:** Disable multi-select or inject logic to sync selection state with filters.
 2. **Role type validation:** The bookmarklet does **not currently check** if the uploaded JSON’s `roleType` matches the page type (System vs Course).  
    **Action:** Add a validation step to compare `data.source.roleType` with the `type` query parameter and warn the user if they differ.
+3. **Match on entitlement:** It is probably safer to compare based on the entitlement rather than the privlige name.  (This might make it more locale agnostic.)
+   **Action:** Change compare key to entitlement.  
 
 ---
 
