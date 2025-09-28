@@ -14,6 +14,13 @@ A lightweight admin helper for Blackboard’s **Manage Privileges** page.
 
 ---
 
+## Known isssues
+
+- **Mult-select checkboxes are disabled** when filters are applied.
+  This was to avoid mistakenly checking hidden rows.  Fix TBD.
+
+---
+
 ## Requirements
 
 - **Page**: URL contains `/webapps/blackboard/execute/managePrivileges`
