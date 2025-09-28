@@ -1,5 +1,11 @@
 [
   {
+    "label": "Bb Role Utility",
+    "description": "Executes all three functions - toggle, download, compare.",
+    "path": "role_privliges_utility/role_privliges_utility.min.bk.js",
+    "category": "Roles & Entitlements Tools"
+  },
+  {
     "label": "Bb Display Entitlements",
     "description": "Displays entitlements for all system roles on the current Blackboard page.",
     "path": "display_entitlements/display_entitlments_bookmarklet.min.bk.js",

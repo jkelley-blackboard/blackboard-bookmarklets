@@ -1,66 +1,137 @@
-# Role Privileges Utility
+# Role Privileges Utility (Bookmarklet)
 
-All-in-one helper for Blackboard **Manage Privileges**:
+A lightweight admin helper for Blackboard’s **Manage Privileges** page.
 
-- **Toggle Entitlements** – show/hide entitlement codes as a small badge next to each privilege name.
-- **Download JSON** – export strict **entitlement‑keyed** JSON (includes display names).
-- **Upload JSON (Compare)** – compare strict entitlement‑keyed JSON and flag mismatches with filters.
-- **Select-All safety** – when a filter is active, header Select-All toggles **only visible rows**.
+## What it does
 
-> **Requirements**: Open the role’s Manage Privileges page and click **Show All** before running.
+- Displays an on-page **control panel**.
+- **Toggles** entitlement codes beside each privilege name.
+- **Exports** the current privileges to a **pretty‑printed JSON** file.
+- **Uploads** a JSON file to **compare**, flags mismatches with ⚠, and provides quick **filters**.
+- Keeps **Select‑All** behavior scoped to **visible rows** when filters are active.
+
+> ✅ Built specifically for the **Manage Privileges** page with **Show All** enabled.
 
 ---
 
-## Install
+## Requirements
 
-Create a bookmark with the URL set to the contents of `role_privileges_utility.min.bk.js` (a single line beginning with `javascript:(...)`).
+- **Page**: URL contains `/webapps/blackboard/execute/managePrivileges`
+- **Show All**: The page must be opened with `showAll=true` (click the **Show All** button first).
+- **DOM scope**: Data rows are read **strictly** from:
+  ```html
+  <tbody id="listContainer_databody"> … </tbody>
+  ```
 
-> We do **not** rely on external loaders due to CSP/policy constraints.
+---
+
+## Design Notes
+
+- **Single source of truth**: All row data (entitlement, name, status) is parsed by a single function `readRow(tr)`.
+- **Name extraction** ignores the entitlement pill injected by this tool to keep JSON clean.
+- **Timestamp** in `source.timestamp` always uses `new Date().toISOString()` at download time.
+- **Pretty JSON**: Saved with 2‑space indentation and a trailing newline.
+- **PAGE CONTEXT** (host, roleType, role, bbVersion) is rendered **at the top of the panel** when it opens.
+- **Download flow**: Does **not** render any extra details in the panel.
+- **No validation** of uploaded entitlement key format—keys are compared as-is.
+
+---
 
 ---
 
 ## Usage
 
-1. Navigate to **Manage Privileges** (System or Course/Organization) and click **Show All**.
-2. Click your bookmark to open the utility panel.
-3. Use the buttons:
-   - **Toggle Entitlements** – shows a small, gray badge (the entitlement) after each privilege name.
-   - **Download JSON** – saves entitlement‑keyed v2 JSON:
-     ```json
-     {
-       "source": {
-         "roleType": "System | Course | Organization",
-         "bbDeployment": "tenant.example.com",
-         "role": "Role Name",
-         "timestamp": "ISO-8601",
-         "bbVersion": "optional"
-       },
-       "privileges": {
-         "entitlement.id": { "status": "permitted|restricted", "name": "Human readable" }
-       }
-     }
-     ```
-     - Items with no detectable entitlement are omitted, and a count is shown.
-   - **Upload JSON (Compare)** – accepts **strict entitlement‑keyed** JSON only.
-     - Flags mismatches with ⚠ in the status column (with a helpful tooltip).
-     - Filters: **Mismatch**, **Permit**, **Restrict**, **Show All**.
-     - **Select All** patch: only visible rows are toggled while any filter is active.
-   - **Refresh Page** – quick reset.
+1. Go to **System Admin → Manage Privileges**.
+2. Click **Show All** (required).
+3. Click your **Role Privileges Utility** bookmarklet.
+4. Use the panel:
+   - **Toggle Entitlements**: show/hide entitlement code pills next to names.
+   - **Download JSON**: saves `bb_role_{type}_{role}_{timestamp}.json`, pretty‑printed.
+   - **Upload JSON (Compare)**: choose a prior export to flag differences.
+   - **Filters**: `Mismatch`, `Permit` (expected permitted but actual restricted), `Restrict` (expected restricted but actual permitted), `Show All`.
+   - **Refresh Page**: reloads the framed content.
 
 ---
 
-## Notes
+## JSON Structure
 
-- **Role name**: The display name is extracted from `#pageTitleText` by taking **text after the first colon**; for **Course/Organization** roles we normalize special characters `[\/\\:*?"<>|] → "_"` (collapse multiple `_`, trim).
-- **Inherited = Permitted** for comparison.
-- **Organization = Course** in the UI; we validate role type case‑insensitively.
+```json
+{
+  "source": {
+    "roleType": "System|Course|Organization|Support|…",
+    "bbDeployment": "your.blackboard.host",
+    "role": "Exact role name from page title",
+    "timestamp": "2025-09-28T21:39:14.123Z",
+    "bbVersion": "… (if detected)"
+  },
+  "privileges": {
+    "some.entitlement.KEY": {
+      "status": "permitted|restricted|inherited",
+      "name": "UI label of the privilege"
+    }
+  }
+}
+```
+
+- During **comparison**, `inherited` is treated as **permitted** for the purpose of mismatch detection.
+
+---
+
+## Comparison Logic
+
+For each entitlement on the page:
+
+- **Actual**: determined from the page row (icons/labels).
+- **Expected**: taken from the uploaded JSON’s `privileges[entitlement].status`.
+- A **mismatch** is counted when **expected ≠ actual**, after mapping `inherited → permitted`.
+
+Additional diagnostics:
+
+- **In JSON but not on page**: entitlements present in your file but absent on the current page.
+- **On page but not in JSON**: entitlements on the page not found in your file.
+
+Filters:
+
+- **Mismatch**: only rows with differences.
+- **Permit**: rows where the file expects **permitted** but page shows **restricted**.
+- **Restrict**: rows where the file expects **restricted** but page shows **permitted**.
+- **Show All**: show everything and restore default Select‑All behavior.
+
+**Select‑All behavior**:
+
+- When a filter is active, Select‑All toggles **only visible rows**.
+- When you click **Show All**, Select‑All returns to **normal** behavior.
 
 ---
 
 ## Troubleshooting
 
-- **“Show All is required.”** – click **Show All** and re-run.
-- **“JSON privileges must be entitlement‑keyed…”** – ensure your `privileges` object uses **entitlement IDs as keys**.
-- **No entitlement on some rows** – themes differ; we look at the row checkbox first and then fall back to links, `data-*`, ids, and `<code>`.
-- **Bookmarklet won’t run** – some orgs block `javascript:` URLs or CSP prevents script actions.
+- **“Go to the manage privileges page”**  
+  You’re not on the correct URL. Navigate to the Manage Privileges page.
 
+- **“Show All is required”**  
+  Click **Show All** on the page, then run the bookmarklet again.
+
+- **No entitlement pills appear**  
+  Ensure you’re on the correct page, **Show All** is enabled, and rows exist under `#listContainer_databody`.
+
+- **Download works but names look wrong**  
+  The script strips out the injected entitlement pill from `<th>` when capturing the name. If you still see issues, the page markup may differ; file an issue with example HTML.
+
+- **Upload JSON (Compare) does nothing**  
+  Make sure the uploaded file contains a top-level `privileges` object. Role type mismatches (e.g., comparing a Course-role JSON on a System-role page) will show a warning and stop.
+
+---
+
+## Security & Privacy
+
+- All operations are **client‑side** (runs in your browser on the admin page).
+- No data is sent to external services.
+- Downloaded files are generated in memory.
+
+---
+
+
+### Minification
+
+This script was minified using https://www.uglifyjs.net/.
