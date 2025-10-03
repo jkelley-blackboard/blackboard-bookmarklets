@@ -7,10 +7,24 @@
         tooltip.style.padding = '6px 10px';
         tooltip.style.borderRadius = '4px';
         tooltip.style.fontSize = '12px';
-        tooltip.style.pointerEvents = 'none';
+        tooltip.style.pointerEvents = 'auto'; // allow clicks
         tooltip.style.zIndex = '9999';
         tooltip.style.display = 'none';
+        tooltip.style.cursor = 'pointer';
         doc.body.appendChild(tooltip);
+
+        tooltip.addEventListener('click', () => {
+            const textToCopy = tooltip.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = tooltip.textContent;
+                tooltip.textContent = 'Copied!';
+                setTimeout(() => {
+                    tooltip.textContent = originalText;
+                }, 1000);
+            }).catch(err => {
+                console.error('Clipboard copy failed:', err);
+            });
+        });
 
         const elements = doc.querySelectorAll('[data-analytics-id],[analytics-id]');
         elements.forEach(el => {
