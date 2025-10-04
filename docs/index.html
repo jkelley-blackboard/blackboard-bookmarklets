@@ -1,11 +1,31 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Blackboard Bookmarklets</title>
 <link href="groovy_index.css" rel="stylesheet"/>
+<style>
+#readmeModal {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 20px;
+  overflow: auto;
+  z-index: 10000;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+#readmeModal button {
+  float: right;
+  margin-bottom: 10px;
+}
+</style>
 </head>
 <body>
 <header>
@@ -15,14 +35,10 @@
 </div>
 </header>
 <div class="main-wrapper">
-<!-- Sidebar -->
 <aside class="sidebar">
 <h3>Categories</h3>
-<ul id="category-links">
-<!-- Dynamically populated -->
-</ul>
+<ul id="category-links"></ul>
 </aside>
-<!-- Main Content -->
 <main class="content">
 <section class="note">
 <strong>About Bookmarklets:</strong>
@@ -34,22 +50,49 @@
 </section>
 <section class="instructions note">
 <strong>To install:</strong> Drag a link below to your bookmarks bar.
-      </section>
-<!-- Bookmarklet sections dynamically generated -->
+</section>
 <div id="bookmarklet-sections"></div>
 <div class="disclaimer note">
 <strong>Disclaimer:</strong> These bookmarklets are experimental and provided as-is. Use at your own risk.
-      </div>
+</div>
 </main>
 </div>
 <footer>
-    © 2025 Anthology Inc. All rights reserved.
-  </footer>
+© 2025 Anthology Inc. All rights reserved.
+</footer>
+
+<!-- Modal for README -->
+<div id="readmeModal">
+  <button onclick="closeModal()">Close</button>
+  <pre id="readmeContent"></pre>
+</div>
+
 <script>
 const repoUser = "jkelley-blackboard";
 const repoName = "blackboard-bookmarklets";
 const branch = "main";
 const jsonPath = "bookmarklets.json";
+
+function showReadme(folder) {
+  const url = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${folder}/README.md`;
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error("README not found");
+      return res.text();
+    })
+    .then(text => {
+      document.getElementById("readmeContent").textContent = text;
+      document.getElementById("readmeModal").style.display = "block";
+    })
+    .catch(err => {
+      document.getElementById("readmeContent").textContent = "Error loading README.md";
+      document.getElementById("readmeModal").style.display = "block";
+    });
+}
+
+function closeModal() {
+  document.getElementById("readmeModal").style.display = "none";
+}
 
 fetch(jsonPath)
   .then(res => res.json())
@@ -108,14 +151,16 @@ fetch(jsonPath)
 
         container.appendChild(link);
 
-        // 📘 link to readme.md
+        // 📘 modal link to README.md
         const readmeLink = document.createElement("a");
         readmeLink.textContent = "📘";
-        readmeLink.target = "_blank";
         readmeLink.style.fontSize = "0.9em";
-
-        const folder = bm.path.split("/")[0];
-        readmeLink.href = `https://github.com/${repoUser}/${repoName}/tree/${branch}/${folder}#readme`;
+        readmeLink.href = "#";
+        readmeLink.onclick = () => {
+          const folder = bm.path.split("/")[0];
+          showReadme(folder);
+          return false;
+        };
 
         container.appendChild(readmeLink);
         grid.appendChild(container);
