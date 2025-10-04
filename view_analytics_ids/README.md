@@ -1,38 +1,29 @@
-# Blackboard Analytics ID Hover Bookmarklet
+# 📊 View Analytics IDs Bookmarklet
 
-This bookmarklet highlights elements on a Blackboard page that have **Analytics IDs**.  
-Hovering over these elements displays their ID in a floating tooltip.
-This can be used to identify the various elements described in Illuminate's CDM_TLM.ultra_events records.
-https://illuminate.blackboard.com/dictionary/entries/entry/CDM_TLM-ULTRA_EVENTS
-These values usually show up in .data:objectId::text
+This bookmarklet highlights all elements on a Blackboard page that contain a `data-analytics-id` or `analytics-id` attribute. It is designed to help developers and administrators quickly identify and interact with analytics-tagged elements.
 
----
+## ✨ Features
 
-## Features
+- ✅ **Visual Highlighting**: All matching elements are outlined with a dashed light green border.
+- 🖱️ **Hover Tooltips**: When you hover over a highlighted element, a floating tooltip displays the analytics ID.
+- 📋 **Click-to-Copy**: Clicking a highlighted element copies its analytics ID to your clipboard. A brief `"Copied!"` message confirms success.
+- 🔄 **Toggle Tooltips**: A floating toggle button in the top-right corner lets you enable or disable tooltips for easier page navigation.
 
-- Outlines elements with `data-analytics-id` or `analytics-id` using a **dashed light green border**.
-- Shows a tooltip near the cursor with the element's analytics ID.
-- Works recursively inside **iframes** on the page.
-- Read-only: Does not modify Blackboard data.
+## 🔧 How to Use
 
----
+1. Visit the [GitHub Pages main page](https://jkelley-blackboard.github.io/blackboard-bookmarklets/) for this repo.
+2. To install the bookmarklet, **drag and drop** the `View Analytics IDs` link from the page into your browser’s bookmarks bar.
+3. Alternatively, create a new bookmark manually:
+   - Paste the minified one-liner into the **URL** field.
+   - Name it something like `View Analytics IDs`.
+4. Navigate to a Blackboard page and click the bookmarklet to activate.
+5. Hover over any highlighted element to see its analytics ID.
+6. Click a highlighted element to **copy its ID to the clipboard**.
+7. Use the floating toggle button in the top-right corner to **enable or disable tooltips** for easier page navigation.
 
-## Usage
+## 🛠 Development Notes
 
-1. Copy the bookmarklet code from `blackboard_analytics_id_hover.js`.
-2. Create a new browser bookmark:
-   - **Name:** `BB Analytics IDs`
-   - **URL:** Paste the code.
-3. Navigate to any Blackboard page.
-4. Hover over elements with analytics IDs to see the tooltip.
+- The script recursively processes `iframe` and `frame` elements to ensure analytics IDs are detected across embedded content.
+- Clipboard functionality uses the modern `navigator.clipboard.writeText()` API and may require HTTPS context.
+- The toggle button is injected into the page and remains fixed in the top-right corner for easy access.
 
----
-
-## Safety Notes
-
-- **Read-only:** The bookmarklet only reads IDs and adds temporary outlines and tooltips.
-- **Cross-origin iframes:** IDs in iframes from other domains may not be accessible due to browser security restrictions.
-
----
-
-[Back to Project Overview](../README.md)
