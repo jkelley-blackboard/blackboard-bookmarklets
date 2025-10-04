@@ -232,3 +232,26 @@ footer {
     font-size: 1.6em;
   }
 }
+
+/* ---- Modal ---- */
+#readmeModal {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 20px;
+  overflow: auto;
+  z-index: 10000;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+#readmeModal button {
+  float: right;
+  margin-bottom: 10px;
+}
+#readmeContent {
+  font-family: sans-serif;
+}
