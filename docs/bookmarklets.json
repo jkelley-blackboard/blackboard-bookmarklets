@@ -1,7 +1,7 @@
 [
   {
     "label": "Bb Role Utility",
-    "description": "Executes all three functions - toggle, download, compare.",
+    "description": "Executes all three functions - Display Entitlements, Role Download, and Role Compare.",
     "path": "role_privliges_utility/role_privliges_utility.min.bk.js",
     "category": "Roles & Entitlements Tools"
   },
@@ -25,13 +25,13 @@
   },
   {
     "label": "Bb Analytics IDs",
-    "description": "Displays the Analytics ID when hovering over course links.",
+    "description": "Highlights Ultra page elements with Analytics IDs with click to copy to clipboard function.",
     "path": "view_analytics_ids/blackboard_analytics_id_hover_bookmarklet.min.bm.js",
     "category": "Other Tools"
   },
   {
     "label": "Bb User Details",
-    "description": "Shows detailed user information on Blackboard pages.",
+    "description": "Shows addtional user information on Admin > Users list.",
     "path": "user_details/user_details_bookmarklet.min.bk.js",
     "category": "Other Tools"
   }
