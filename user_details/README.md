@@ -4,7 +4,7 @@ This bookmarklet adds a tooltip icon for each user on the admin manage user page
 Hovering over the tooltip fetches some addtional information using the REST API.
 Clicking on it copies the info to your clipboard.
 
-![Alt text](screencap.png)
+![blackboard screencap](screencap.png)
 ---
 
 ## Features
