@@ -38,23 +38,6 @@ When clicked, it executes directly in the context of the page you're viewing.
 
 ---
 
-## 🧰 Available Tools
-
-### Roles & Entitlements
-| Bookmarklet | Description |
-|-------------|-------------|
-| **Display Entitlements** | Shows all entitlements (privileges) assigned to a specific role in a clean, easy-to-read overlay. |
-| **Role Download** | Downloads role and privilege data as a file for reporting or analysis. |
-| **Role Compare** | Compare privileges between two roles to quickly identify differences. |
-
-### Analytics
-| Bookmarklet | Description |
-|-------------|-------------|
-| **Analytics ID Hover** | Displays internal Blackboard IDs when hovering over elements like courses, users, or enrollments. Useful for analytics and troubleshooting. |
-
-
----
-
 ## ⚠ Disclaimer
 
 These bookmarklets are **experimental** and provided **as-is**, **without warranty or support**.  
