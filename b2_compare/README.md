@@ -14,7 +14,6 @@ This bookmarklet provides a lightweight interface for extracting installed Build
 
 - Must be run from the **Admin > Tools > Installed Tools** page in Blackboard
 - The "Show All" option must be enabled on the page
-- REST API version check requires a valid session and same-origin access
 
 ## Usage
 
@@ -25,16 +24,15 @@ This bookmarklet provides a lightweight interface for extracting installed Build
 
 ## Limitations
 
-- REST API version check may fail if the iframe is served from a different origin or if the session is not authenticated.
 - Only tools with detectable `toolId` are included in the export.
 
 ## TODO
-
-- [x] **Get a reliable method for system version**  
-  Uses `doc.location.origin` to ensure REST API calls go to the correct domain.
 
 - [ ] **Implement upload and compare**  
   Add functionality to upload a previously exported JSON file and compare tool metadata.
 
 - [ ] **Ignore differences in version where the version strings match their system version**  
   When comparing, skip mismatches if the tool version matches the system version string.
+  
+- [ ] **Ignore tool ID differences in same host**  
+  When comparing, skip tool id mismatches when comparing on a different host.
