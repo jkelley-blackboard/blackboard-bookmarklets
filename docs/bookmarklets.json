@@ -1,7 +1,7 @@
 [
   {
     "label": "Bb Role Utility",
-    "description": "Executes all three functions - toggle, download, compare.",
+    "description": "Executes all three functions - Display Entitlements, Role Download, and Role Compare.",
     "path": "role_privliges_utility/role_privliges_utility.min.bk.js",
     "category": "Roles & Entitlements Tools"
   },
