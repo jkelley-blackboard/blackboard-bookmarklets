@@ -1,20 +1,11 @@
 javascript:(async function() {
-  // Escape HTML special characters for safe display
   const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&', '<': '<', '>': '>' }[c]));
-
-  // Get the admin iframe document
   const getAdminFrameDocument = () => {
     const f = document.querySelector('iframe[name="bb-base-admin-iframe"]');
     return { frame: f, doc: f?.contentDocument ?? null };
   };
-
-  // Check if current page is the Installed Tools page
   const isCorrectPage = doc => doc?.location.pathname.includes('/webapps/plugins/execute/plugInController');
-
-  // Check if "Show All" is enabled
   const isShowAll = doc => new URLSearchParams(doc.location.search).get('showAll') === 'true';
-
-  // Get system context including version via REST API
   const getPageContext = async (doc) => {
     const host = doc.location.host || '';
     const timestamp = new Date().toISOString();
@@ -30,8 +21,6 @@ javascript:(async function() {
     }
     return { host, bbVersion, timestamp };
   };
-
-  // Parse a row of tool data from the Installed Tools table
   const parseRow = row => {
     const nameInput = row.querySelector("input[name^='name__']");
     const toolId = nameInput ? nameInput.name.split('__')[1] : null;
@@ -42,42 +31,21 @@ javascript:(async function() {
     const availability = row.querySelector("td:nth-of-type(5) .table-data-cell-value")?.innerText.trim();
     const showRemoveInactiveAlert = row.querySelector("input[name^='showRemoveInactiveAlert__']")?.value === "true";
     const hasCheckbox = !!row.querySelector("input[type='checkbox']");
-    return {
-      toolId,
-      toolName,
-      vendor,
-      version,
-      supportStatus,
-      availability,
-      showRemoveInactiveAlert,
-      hasCheckbox
-    };
+    return { toolId, toolName, vendor, version, supportStatus, availability, showRemoveInactiveAlert, hasCheckbox };
   };
-
-  // Create or reset the floating panel UI
   const ensurePanel = doc => {
     let panel = doc.getElementById('cmpPanel');
     if (panel) {
       panel.querySelector('#pageContextTop').innerHTML = '';
-      panel.querySelector('#summary').textContent = '';
+      panel.querySelector('#summary').innerHTML = '';
       return panel;
     }
-
     panel = doc.createElement('div');
     panel.id = 'cmpPanel';
     panel.style.cssText = `
-      position:fixed;
-      top:20px;
-      left:20px;
-      z-index:2147483647;
-      background:#fffbe6;
-      border:3px solid #111;
-      border-radius:8px;
-      padding:12px;
-      min-width:380px;
-      max-height:72vh;
-      overflow:auto;
-      box-shadow:0 6px 18px rgba(0,0,0,.25);
+      position:fixed;top:20px;left:20px;z-index:2147483647;background:#fffbe6;
+      border:3px solid #111;border-radius:8px;padding:12px;min-width:380px;
+      max-height:72vh;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.25);
       font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     `;
     panel.innerHTML = `
@@ -91,24 +59,13 @@ javascript:(async function() {
     `;
     const style = doc.createElement('style');
     style.textContent = `
-      #cmpPanel .cmp-srcline {
-        white-space:pre-wrap;
-        word-break:break-word;
+      #cmpPanel .cmp-srcline{white-space:pre-wrap;word-break:break-word;}
+      #cmpPanel button.cmp-btn{
+        margin:0;padding:6px 10px;font-size:13px;border-radius:6px;
+        border:1px solid #5b21b6;background:#7c3aed;color:#fff;
+        cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06);
       }
-      #cmpPanel button.cmp-btn {
-        margin:0;
-        padding:6px 10px;
-        font-size:13px;
-        border-radius:6px;
-        border:1px solid #5b21b6;
-        background:#7c3aed;
-        color:#fff;
-        cursor:pointer;
-        box-shadow:0 1px 2px rgba(0,0,0,.06);
-      }
-      #cmpPanel button.cmp-btn:hover {
-        filter:brightness(1.05);
-      }
+      #cmpPanel button.cmp-btn:hover{filter:brightness(1.05);}
     `;
     panel.appendChild(style);
     doc.body.appendChild(panel);
@@ -116,8 +73,6 @@ javascript:(async function() {
     panel.style.left = (doc.defaultView.innerWidth - panel.offsetWidth) / 2 + 'px';
     return panel;
   };
-
-  // Add a button to the floating panel
   const addBtn = (doc, wrap, label, fn, id) => {
     const btn = doc.createElement('button');
     btn.textContent = label;
@@ -126,21 +81,18 @@ javascript:(async function() {
     btn.onclick = fn;
     wrap.appendChild(btn);
   };
-
-  // Render system context info in the panel
   const renderPageContext = (doc, panel, ctx) => {
     const box = panel.querySelector('#pageContextTop');
     box.innerHTML = `
       <div style="font-weight:600;margin-bottom:4px">SOURCE CONTEXT</div>
-      ${Object.entries(ctx).map(([k, v]) => `<div class="cmp-srcline">${esc(k)} = ${esc(v)}</div>`).join('')}
+      ${Object.entries(ctx).map(([k,v])=>`<div class="cmp-srcline">${esc(k)} = ${esc(v)}</div>`).join('')}
     `;
   };
 
-  // Main logic
   const { doc } = getAdminFrameDocument();
   if (!doc) return alert('⚠ Admin iframe not found. Go to Admin > Tools > Installed Tools to run this.');
   if (!isCorrectPage(doc)) return alert('⚠ This bookmarklet must be run on the Installed Tools page.');
-  if (!isShowAll(doc)) return alert('⚠ Show All is required. Click "Show All" on the page, then re-run this bookmarklet.');
+  if (!isShowAll(doc)) return alert('⚠ Show All is required. Click "Show All" then re-run.');
 
   const panel = ensurePanel(doc);
   const ctx = await getPageContext(doc);
@@ -149,18 +101,128 @@ javascript:(async function() {
   const btnRow = panel.querySelector('#buttonRowPrimary');
   const summary = panel.querySelector('#summary');
 
-  // Add export button
   addBtn(doc, btnRow, 'Extract JSON', async () => {
     const rows = Array.from(doc.querySelectorAll("tr[id^='unfilteredList_row']"));
     const tools = rows.map(parseRow).filter(t => t.toolId);
     const output = { source: ctx, tools };
     summary.textContent = `✅ Exported ${tools.length} tools.`;
-
     const blob = new Blob([JSON.stringify(output, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
+    const hostPart = ctx.host.split('.')[0] ?? 'host';
+    const versionPart = ctx.bbVersion.split('-')[0].split('.').slice(0, 2).join('.') ?? 'version';
+    const datePart = ctx.timestamp.slice(0, 10).replace(/-/g, '');
+    const filename = `blackboard_b2_export_${hostPart}_${versionPart}_${datePart}.json`;
     const link = doc.createElement("a");
     link.href = url;
-    link.download = "blackboard_b2_export.json";
+    link.download = filename;
     link.click();
   }, 'extractBtn');
+
+  addBtn(doc, btnRow, 'Upload & Compare', () => {
+    const fileInput = doc.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    fileInput.onchange = async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const uploadedData = JSON.parse(text);
+        const srcInfo = uploadedData.source || {};
+        const uploadedTools = uploadedData.tools ?? [];
+        summary.innerHTML = `
+          <div style="font-weight:600;margin-top:8px">UPLOADED FILE</div>
+          <div class="cmp-srcline">File: ${esc(file.name)}</div>
+          <div class="cmp-srcline">Tools: ${uploadedTools.length}</div>
+          <div class="cmp-srcline">System: ${esc(srcInfo.bbVersion ?? 'Unknown')}</div>
+        `;
+
+        const currentRows = Array.from(doc.querySelectorAll("tr[id^='unfilteredList_row']"));
+        const currentTools = currentRows.map(parseRow).filter(t => t.toolName && t.vendor);
+
+        const mismatches = [];
+        const matches = [];
+        const missing = [];
+        const extra = [];
+
+        uploadedTools.forEach(uploaded => {
+          const match = currentTools.find(current =>
+            current.toolName === uploaded.toolName && current.vendor === uploaded.vendor
+          );
+          if (!match) {
+            missing.push({ toolName: uploaded.toolName, vendor: uploaded.vendor });
+            return;
+          }
+          const diffs = [];
+          if (
+            uploaded.version !== match.version &&
+            match.version !== ctx.bbVersion &&
+            uploaded.version !== ctx.bbVersion
+          ) diffs.push(`version: ${uploaded.version} → ${match.version}`);
+          if (uploaded.supportStatus !== match.supportStatus)
+            diffs.push(`supportStatus: ${uploaded.supportStatus} → ${match.supportStatus}`);
+          if (uploaded.availability !== match.availability)
+            diffs.push(`availability: ${uploaded.availability} → ${match.availability}`);
+          if (diffs.length) mismatches.push({ toolName: uploaded.toolName, vendor: uploaded.vendor, diffs });
+          else matches.push(uploaded.toolName);
+        });
+
+        // find current tools not in uploaded file
+        currentTools.forEach(current => {
+          const match = uploadedTools.find(u =>
+            u.toolName === current.toolName && u.vendor === current.vendor
+          );
+          if (!match) extra.push({ toolName: current.toolName, vendor: current.vendor });
+        });
+
+        summary.innerHTML += `
+          <div style="margin-top:8px">✅ Compared ${uploadedTools.length} tools.</div>
+          <div>🔍 ${matches.length} matched, ⚠️ ${mismatches.length} mismatched, ❌ ${missing.length} missing, ➕ ${extra.length} extra.</div>
+          ${missing.length ? `<div style="margin-top:6px"><strong>Missing (in current):</strong><br>${missing.map(m => `❌ ${esc(m.toolName)} (${esc(m.vendor)})`).join('<br>')}</div>` : ''}
+          ${extra.length ? `<div style="margin-top:6px"><strong>Extra (not in file):</strong><br>${extra.map(m => `➕ ${esc(m.toolName)} (${esc(m.vendor)})`).join('<br>')}</div>` : ''}
+          ${mismatches.map(m => `<div style="margin-top:6px"><strong>${esc(m.toolName)}</strong> (${esc(m.vendor)}):<br>${m.diffs.map(d => `⚠️ ${esc(d)}`).join('<br>')}</div>`).join('')}
+        `;
+
+        if (mismatches.length || missing.length || extra.length) {
+          const exportDiv = doc.createElement('div');
+          exportDiv.style.marginTop = '8px';
+          const allIssues = [
+            ...mismatches,
+            ...missing.map(m => ({ ...m, diffs: ['Missing from current system'] })),
+            ...extra.map(m => ({ ...m, diffs: ['Extra in current system'] }))
+          ];
+          const plainText = allIssues.map(m =>
+            `${m.toolName} (${m.vendor}):\n${(m.diffs || []).map(d => `  - ${d}`).join('\n')}`
+          ).join('\n\n');
+          const copyBtn = doc.createElement('button');
+          copyBtn.textContent = '📋 Copy Mismatches';
+          copyBtn.className = 'cmp-btn';
+          copyBtn.onclick = async () => {
+            await navigator.clipboard.writeText(plainText);
+            copyBtn.textContent = '✅ Copied!';
+            setTimeout(() => (copyBtn.textContent = '📋 Copy Mismatches'), 2000);
+          };
+          const downloadBtn = doc.createElement('button');
+          downloadBtn.textContent = '💾 Download Mismatches';
+          downloadBtn.className = 'cmp-btn';
+          downloadBtn.onclick = () => {
+            const blob = new Blob([JSON.stringify(allIssues, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = doc.createElement('a');
+            link.href = url;
+            link.download = `b2_mismatch_report_${ctx.host.split('.')[0]}_${ctx.timestamp.slice(0,10).replace(/-/g,'')}.json`;
+            link.click();
+          };
+          exportDiv.appendChild(copyBtn);
+          exportDiv.appendChild(downloadBtn);
+          summary.appendChild(exportDiv);
+        }
+      } catch (err) {
+        summary.textContent = `❌ Failed to parse uploaded file: ${err.message}`;
+      }
+    };
+    doc.body.appendChild(fileInput);
+    fileInput.click();
+  }, 'uploadBtn');
 })();
