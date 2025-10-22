@@ -71,7 +71,7 @@
       }
 
       icon.title = "Loading...";
-      const apiUrl = `${host}/learn/api/public/v1/users/userName:${encodeURIComponent(username)}?fields=id,externalId,lastLogin,userName,created`;
+      const apiUrl = `${host}/learn/api/public/v1/users/userName:${encodeURIComponent(username)}?fields=id,externalId,studentId,name,contact,institutionRoleIds,systemRoleIds,created,lastLogin`;
 
       fetch(apiUrl)
         .then(response => {
@@ -79,9 +79,31 @@
           return response.json();
         })
         .then(data => {
-          const lastLogin = data.lastLogin ? new Date(data.lastLogin).toLocaleString() : "N/A";
+		  const userName = data.userName || "N/A";	
+          const id = data.id || "N/A";
+          const externalId = data.externalId || "N/A";
+          const studentId = data.studentId || "N/A";
+          const fullName = data.name ? (data.name.given || "") + " " + (data.name.family || "") : "N/A";
+          const email = data.contact?.email || "N/A";
+          const institutionEmail = data.contact?.institutionEmail || "N/A";
+          const institutionRoles = data.institutionRoleIds?.join(", ") || "N/A";
+          const systemRoles = data.systemRoleIds?.join(", ") || "N/A";
           const created = data.created ? new Date(data.created).toLocaleString() : "N/A";
-          const info = `User ID: ${data.id || "N/A"}\nExternal ID: ${data.externalId || "N/A"}\nLast Login: ${lastLogin}\nDate Created: ${created}`;
+          const lastLogin = data.lastLogin ? new Date(data.lastLogin).toLocaleString() : "N/A";
+
+          const info =
+            "Username: " + userName + "\n" +
+            "External ID: " + externalId + "\n" +
+            "Primary Key: " + id + "\n" +
+            "Student ID: " + studentId + "\n" +
+            "Full Name: " + fullName + "\n" +
+            "Email: " + email + "\n" +
+            "Institution Email: " + institutionEmail + "\n" +
+            "Institution Roles: " + institutionRoles + "\n" +
+            "System Roles: " + systemRoles + "\n" +
+            "Created: " + created + "\n" +
+            "Last Login: " + lastLogin;
+
           icon.title = info;
           cache[username] = info;
         })
