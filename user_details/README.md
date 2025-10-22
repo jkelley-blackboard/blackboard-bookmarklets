@@ -4,7 +4,7 @@ This bookmarklet adds a tooltip icon for each user on the admin manage user page
 Hovering over the tooltip fetches some addtional information using the REST API.
 Clicking on it copies the info to your clipboard.
 
-![blackboard screencap](screencap.png)
+![ScreenCap](https://raw.githubusercontent.com/jkelley-blackboard/blackboard-bookmarklets/refs/heads/main/user_details/screencap.png)
 ---
 
 ## Features
