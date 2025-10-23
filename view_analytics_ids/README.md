@@ -2,6 +2,10 @@
 
 This bookmarklet highlights all elements on a Blackboard page that contain a `data-analytics-id` or `analytics-id` attribute. It is designed to help developers and administrators quickly identify and interact with analytics-tagged elements.
 
+It is especially helpful when working in Illuminate's CDM_TLM.ultra_events view. Where they map to the objectId field.
+
+Example: "objectId": "ai.chat.chat.controls.send"
+
 ## ✨ Features
 
 - ✅ **Visual Highlighting**: All matching elements are outlined with a dashed light green border.
