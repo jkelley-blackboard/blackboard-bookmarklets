@@ -71,7 +71,7 @@
       }
 
       icon.title = "Loading...";
-      const apiUrl = `${host}/learn/api/public/v1/users/userName:${encodeURIComponent(username)}?fields=id,externalId,studentId,name,contact,institutionRoleIds,systemRoleIds,created,lastLogin`;
+      const apiUrl = `${host}/learn/api/public/v1/users/userName:${encodeURIComponent(username)}?fields=id,externalId,studentId,name,contact,institutionRoleIds,systemRoleIds,created,lastLogin,uuid`;
 
       fetch(apiUrl)
         .then(response => {
@@ -81,6 +81,7 @@
         .then(data => {
 		  const userName = data.userName || "N/A";	
           const id = data.id || "N/A";
+		  const uuid = data.uuid || "N/A";
           const externalId = data.externalId || "N/A";
           const studentId = data.studentId || "N/A";
           const fullName = data.name ? (data.name.given || "") + " " + (data.name.family || "") : "N/A";
@@ -102,7 +103,8 @@
             "Institution Roles: " + institutionRoles + "\n" +
             "System Roles: " + systemRoles + "\n" +
             "Created: " + created + "\n" +
-            "Last Login: " + lastLogin;
+            "Last Login: " + lastLogin + "\n" +
+			"UUID: " + uuid;
 
           icon.title = info;
           cache[username] = info;
