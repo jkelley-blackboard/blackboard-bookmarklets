@@ -36,6 +36,12 @@
     "category": "Other Tools"
   },
   {
+    "label": "Bb Course Details",
+    "description": "Shows addtional cousre information on Admin > Courses list.",
+    "path": "course_details/course_details_bookmarklet.min.bk.js",
+    "category": "Other Tools"
+  },
+  {
     "label": "Building Blocks Compare",
     "description": "Dowload B2 list and upload to compare between versions or systems.",
     "path": "b2_compare/b2_compare_bookmarklet.min.bk.js",
