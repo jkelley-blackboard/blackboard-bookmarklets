@@ -44,7 +44,7 @@
   {
     "label": "Ultra Course Roster",
     "description": "Printable roster from in the Ultra course.",
-    "path": "course_details/ultra_roster_bookmarklet.min.bk.js",
+    "path": "ultra_roster/ultra_roster_bookmarklet.min.bk.js",
     "category": "Other Tools"
   },
   {
