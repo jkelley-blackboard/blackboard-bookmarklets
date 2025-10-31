@@ -37,8 +37,14 @@
   },
   {
     "label": "Bb Course Details",
-    "description": "Shows addtional cousre information on Admin > Courses list.",
+    "description": "Shows addtional course information on Admin > Courses list.",
     "path": "course_details/course_details_bookmarklet.min.bk.js",
+    "category": "Other Tools"
+  },
+  {
+    "label": "Ultra Course Roster",
+    "description": "Printable roster from in the Ultra course.",
+    "path": "course_details/ultra_roster_bookmarklet.min.bk.js",
     "category": "Other Tools"
   },
   {
