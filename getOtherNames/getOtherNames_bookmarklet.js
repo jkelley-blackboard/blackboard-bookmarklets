@@ -1,0 +1,55 @@
+javascript:(function() {
+  const date = prompt('Enter date (YYYY-MM-DD):', '2026-01-01');
+  if (!date) return;
+  
+  const results = [];
+  let offset = 0;
+  const limit = 100;
+  
+  async function fetchPage() {
+    try {
+      const url = `/learn/api/public/v1/users?fields=lastLogin,name.given,name.other,userName&lastLogin=${date}&limit=${limit}&offset=${offset}`;
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
+      
+      // Filter users with other names
+      const usersWithOther = data.results.filter(u => u.name && u.name.other);
+      usersWithOther.forEach(u => {
+        results.push(`${u.userName},${u.name.given || ''},${u.name.other}`);
+      });
+      
+      // Check if there are more pages
+      if (data.paging && data.paging.nextPage) {
+        offset += limit;
+        return fetchPage();
+      }
+      
+      // Display results
+      if (results.length === 0) {
+        alert('No users found with "other" names');
+      } else {
+        const output = 'userName,firstName,name.other\n' + results.join('\n');
+        const blob = new Blob([output], {type: 'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `blackboard-other-names-${date}.csv`;
+        a.click();
+        alert(`Found ${results.length} users with "other" names. CSV downloaded.`);
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+      console.error(error);
+    }
+  }
+  
+  fetchPage();
+})();
