@@ -47,16 +47,16 @@ Chosen interactively via prompt when the bookmarklet runs:
 
 **Option 1 — `userName|uuid`** (pipe-delimited, one per line):
 ```
-jkelley|_123_1
-jkelley_instructor|_456_1
-student_jkelley|_789_1
+jkelley|4f31280284014dedb13b87639948dd3f
+jkelley_instructor|fa4a9908f8854063a1345aa70185f75b
+student_jkelley|d9bdeb756a2e49a890799e48682a7102
 ```
 
 **Option 2 — uuid only** (one per line):
 ```
-_123_1
-_456_1
-_789_1
+4f31280284014dedb13b87639948dd3f
+fa4a9908f8854063a1345aa70185f75b
+d9bdeb756a2e49a890799e48682a7102
 ```
 
 Usernames that are not found are excluded from the output file and listed in the completion alert.
