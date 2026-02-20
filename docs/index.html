@@ -4,28 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blackboard Bookmarklets</title>
-
-  <!-- Link to merged CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="groovy_index.css">
-
-  <!-- Marked.js for rendering README markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+
   <header>
     <div class="header-container">
-      <h1>Blackboard Bookmarklets</h1>
-      <a href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">View Repository</a>
+      <div class="header-brand">
+        <div class="header-logo">Bb</div>
+        <h1>Blackboard Bookmarklets</h1>
+      </div>
+      <a class="header-link" href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">
+        ↗ View Repository
+      </a>
     </div>
   </header>
 
   <div class="main-wrapper">
     <aside class="sidebar">
-      <h3>Categories</h3>
-      <ul id="category-links"></ul>
+      <div class="sidebar-inner">
+        <h3>Categories</h3>
+        <ul id="category-links"></ul>
+      </div>
     </aside>
 
     <main class="content">
+
       <section class="note">
         <strong>About Bookmarklets:</strong>
         <ul>
@@ -36,7 +43,7 @@
       </section>
 
       <section class="instructions note">
-        <strong>To install:</strong> Drag a link below to your bookmarks bar.
+        <strong>To install:</strong> Drag a bookmarklet button to your browser's bookmarks bar.
       </section>
 
       <div id="bookmarklet-sections"></div>
@@ -44,6 +51,7 @@
       <div class="disclaimer note">
         <strong>Disclaimer:</strong> These bookmarklets are experimental and provided as-is. Use at your own risk.
       </div>
+
     </main>
   </div>
 
@@ -51,25 +59,30 @@
     © 2025 Anthology Inc. All rights reserved.
   </footer>
 
-  <!-- Modal for README -->
+  <!-- README Modal -->
   <div id="readmeModal">
-    <button onclick="closeModal()">Close</button>
-    <div id="readmeContent"></div>
+    <div class="modal-inner">
+      <div class="modal-header">
+        <h3 id="readmeModalTitle">README</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div id="readmeContent"></div>
+    </div>
   </div>
 
   <script>
     const repoUser = "jkelley-blackboard";
     const repoName = "blackboard-bookmarklets";
-    const branch = "main";
+    const branch   = "main";
     const jsonPath = "bookmarklets.json";
 
     function cleanPath(path) {
       return path.replace(/^refs\/heads\//, "");
     }
 
-    function showReadme(folder) {
-      const cleanFolder = cleanPath(folder);
-      const url = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${cleanFolder}/README.md`;
+    function showReadme(folder, label) {
+      const url = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${cleanPath(folder)}/README.md`;
+      document.getElementById("readmeModalTitle").textContent = label + " — README";
       fetch(url)
         .then(res => {
           if (!res.ok) throw new Error("README not found");
@@ -77,17 +90,25 @@
         })
         .then(text => {
           document.getElementById("readmeContent").innerHTML = marked.parse(text);
-          document.getElementById("readmeModal").style.display = "block";
+          document.getElementById("readmeModal").classList.add("open");
         })
-        .catch(err => {
-          document.getElementById("readmeContent").innerHTML = "<p><strong>Error loading README.md</strong></p>";
-          document.getElementById("readmeModal").style.display = "block";
+        .catch(() => {
+          document.getElementById("readmeContent").innerHTML = "<p><em>No README found for this bookmarklet.</em></p>";
+          document.getElementById("readmeModal").classList.add("open");
         });
     }
 
     function closeModal() {
-      document.getElementById("readmeModal").style.display = "none";
+      document.getElementById("readmeModal").classList.remove("open");
     }
+
+    // Close on overlay click
+    document.getElementById("readmeModal").addEventListener("click", function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // Close on Escape
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
     fetch(jsonPath)
       .then(res => res.json())
@@ -98,38 +119,59 @@
           categories[bm.category].push(bm);
         });
 
-        const categoryLinks = document.getElementById("category-links");
+        const categoryLinks   = document.getElementById("category-links");
         const sectionsContainer = document.getElementById("bookmarklet-sections");
 
         Object.entries(categories).forEach(([cat, bms]) => {
+          // Sidebar link
           const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.href = `#${cat.replace(/\s+/g,"-")}`;
+          const a  = document.createElement("a");
+          a.href = `#${cat.replace(/\s+/g, "-")}`;
           a.textContent = cat;
           li.appendChild(a);
           categoryLinks.appendChild(li);
 
+          // Section
           const section = document.createElement("section");
           section.className = "section";
-          section.id = cat.replace(/\s+/g,"-");
+          section.id = cat.replace(/\s+/g, "-");
+
+          const header = document.createElement("div");
+          header.className = "section-header";
 
           const h2 = document.createElement("h2");
           h2.textContent = cat;
-          section.appendChild(h2);
+          header.appendChild(h2);
+
+          const count = document.createElement("span");
+          count.className = "section-count";
+          count.textContent = bms.length;
+          header.appendChild(count);
+
+          section.appendChild(header);
 
           const grid = document.createElement("div");
           grid.className = "grid";
 
           bms.forEach(bm => {
-            const container = document.createElement("div");
-            container.style.display = "flex";
-            container.style.alignItems = "center";
-            container.style.gap = "8px";
+            // Card
+            const card = document.createElement("div");
+            card.className = "bm-card";
+
+            // Description
+            const desc = document.createElement("p");
+            desc.className = "bm-card-desc";
+            desc.textContent = bm.description;
+            card.appendChild(desc);
+
+            // Footer row: drag button + readme link
+            const footer = document.createElement("div");
+            footer.className = "bm-card-footer";
 
             const link = document.createElement("a");
             link.className = "bookmarklet";
             link.textContent = bm.label;
-            link.title = bm.description;
+            link.title = "Drag to bookmarks bar";
             link.target = "_blank";
 
             const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${cleanPath(bm.path)}`;
@@ -138,26 +180,34 @@
                 if (!res.ok) throw new Error(`File not found: ${bm.path}`);
                 return res.text();
               })
-              .then(code => link.href = `javascript:${encodeURIComponent(code.trim())}`)
+              .then(code => {
+                const trimmed = code.trim();
+                // If code already starts with javascript: use as-is, otherwise wrap
+                link.href = trimmed.startsWith("javascript:")
+                  ? trimmed
+                  : `javascript:${encodeURIComponent(trimmed)}`;
+              })
               .catch(err => {
                 console.error("Error loading bookmarklet:", bm.label, err);
                 link.href = `javascript:alert('Bookmarklet not found: ${bm.label}')`;
               });
 
-            container.appendChild(link);
+            footer.appendChild(link);
 
-            const readmeLink = document.createElement("a");
-            readmeLink.textContent = "📘";
-            readmeLink.style.fontSize = "0.9em";
-            readmeLink.href = "#";
-            readmeLink.onclick = () => {
+            const readmeBtn = document.createElement("a");
+            readmeBtn.className = "readme-btn";
+            readmeBtn.title = "View README";
+            readmeBtn.textContent = "📘";
+            readmeBtn.href = "#";
+            readmeBtn.onclick = (e) => {
+              e.preventDefault();
               const folder = bm.path.split("/")[0];
-              showReadme(folder);
-              return false;
+              showReadme(folder, bm.label);
             };
+            footer.appendChild(readmeBtn);
 
-            container.appendChild(readmeLink);
-            grid.appendChild(container);
+            card.appendChild(footer);
+            grid.appendChild(card);
           });
 
           section.appendChild(grid);
@@ -166,5 +216,6 @@
       })
       .catch(err => console.error("Error loading bookmarklets.json:", err));
   </script>
+
 </body>
 </html>
