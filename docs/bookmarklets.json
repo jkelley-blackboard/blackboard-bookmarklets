@@ -64,5 +64,11 @@
     "description": "Exports a list of users with other names.",
     "path": "getOtherNames/getOtherNames_bookmarklet.min.bk.js",
     "category": "Extractors"
+  },
+  {
+    "label": "User UUID Export",
+    "description": "Generates a list of UUID values for input usernames.",
+    "path": "uuid_lookup/uuid_lookup_bookmarklet_min.js",
+    "category": "Extractors"
   }
 ]
