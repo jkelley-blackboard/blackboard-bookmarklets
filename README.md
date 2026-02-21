@@ -1,69 +1,89 @@
 # Blackboard Bookmarklets
 
-A collection of **experimental bookmarklets** designed to help Blackboard Learn administrators and support teams streamline workflows.  
-These lightweight tools can be added to your browser bookmarks and run directly from any Blackboard page.
+A collection of **experimental bookmarklets** for Blackboard Learn administrators and support teams.
+These lightweight tools run directly in your browser on the relevant Blackboard page — no installation, no extensions, no special permissions required.
+
+> ⚠ **Experimental.** These bookmarklets are provided as-is, without warranty or official support from Blackboard or Anthology. Use at your own risk, and verify behavior in a test environment before using in production. They may break after Blackboard SaaS updates.
 
 ---
 
-## 🌐 Live Bookmarklet Page
-The easiest way to access and install the bookmarklets is via the **live index page**:
+## 🌐 Live Tool Page
 
-**[➡ Blackboard Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/)**
+The best place to browse, install, and learn about individual bookmarklets is the **live docs page**:
 
-From there, you can drag and drop bookmarklet buttons into your bookmarks bar.
+### **[➡ blackboard-bookmarklets launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/)**
 
----
-
-## 📖 What Are Bookmarklets?
-
-A **bookmarklet** is a small JavaScript program stored as a browser bookmark.  
-When clicked, it executes directly in the context of the page you're viewing.
-
-> **Why use bookmarklets?**  
-> - No installation required.
-> - No browser extensions or special permissions needed.
-> - Easy to share and maintain.
+From there you can drag any bookmarklet directly to your browser's bookmarks bar, or copy the code to create a bookmark manually.
 
 ---
 
-## 🚀 How to Install
+## 📖 What Is a Bookmarklet?
 
-1. Visit the **[Bookmarklet Launcher](https://jkelley-blackboard.github.io/blackboard-bookmarklets/)**.
-2. Drag a bookmarklet button from the page to your browser's **bookmarks bar**.
-3. Navigate to the appropriate page in Blackboard Learn (see tool descriptions below).
-4. Click the bookmarklet to execute it.
+A **bookmarklet** is a small JavaScript program stored as a browser bookmark. When clicked, it executes in the context of whatever page you're currently viewing — in this case, a Blackboard Learn page.
 
-> ⚠ **Tip:**  
-> If you don’t see your bookmarks bar, enable it in your browser settings.
+**Why use bookmarklets?**
+- No installation or deployment required
+- No browser extensions or elevated permissions needed
+- Easy to share across a team
+- Work alongside Blackboard without modifying it
 
 ---
 
-## ⚠ Disclaimer
+## 🗂 Project Structure
 
-These bookmarklets are **experimental** and provided **as-is**, **without warranty or support**.  
-Use them at your own risk and **only** in non-production or test environments until thoroughly verified.
+Each bookmarklet lives in its own folder and follows a consistent pattern:
 
-- They are not officially supported by Blackboard or Anthology.
-- Always follow your institution’s IT policies before using external tools.
+```
+bookmarklet-name/
+├── bookmarklet-name.js          # Readable source
+├── bookmarklet-name.min.bk.js  # Minified bookmarklet (what the page loads)
+└── README.md                    # Usage instructions for this tool
+```
+
+The live docs page is driven by **`docs/bookmarklets.json`** — a simple registry that maps each tool to its category, label, description, and minified file path. The page fetches and renders this automatically, so the tool listing always stays current.
 
 ---
 
 ## 🤝 Contributing
 
-If you’d like to contribute improvements or new bookmarklets:
+Contributions are welcome — new bookmarklets, bug fixes, or improvements to existing tools.
 
-1. Fork this repository.
-2. Create a new branch for your feature or fix.
-3. Submit a pull request with details about the change.
+### Adding a new bookmarklet
+
+1. Fork the repository and create a new branch.
+2. Create a folder for your tool following the structure above.
+3. Write your bookmarklet as readable source, then produce a minified version prefixed with `javascript:`.
+4. Add a `README.md` in the folder describing what the tool does, which Blackboard page to run it on, and any known limitations.
+5. Add an entry to **`docs/bookmarklets.json`**:
+
+```json
+{
+  "label": "Your Tool Name",
+  "description": "One sentence describing what it does.",
+  "path": "your-folder/your-tool.min.bk.js",
+  "category": "Existing or New Category"
+}
+```
+
+6. Submit a pull request with a description of the change.
+
+### Bug fixes & improvements
+
+If a bookmarklet breaks after a Blackboard update, please open an issue or submit a fix directly. Include the Blackboard version (if known) and a description of the failure.
+
+### Guidelines
+
+- Keep tools focused on a single task
+- Avoid storing or transmitting user data externally
+- Follow your institution's IT policies before deploying to a shared team
 
 ---
 
 ## 📜 License
 
-This project is licensed under the MIT License.  
-See the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Created by:** [Jeff Kelley](https://github.com/jkelley-blackboard)  
-Part of ongoing work to explore lightweight administrative tooling for Blackboard Learn.
+**Created by** [Jeff Kelley](https://github.com/jkelley-blackboard) · Solutions Engineer, Anthology  
+*Anthology retains rights to these projects. Provided without warranty or support.*
