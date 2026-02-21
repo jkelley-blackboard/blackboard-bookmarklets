@@ -17,14 +17,14 @@
         <div class="header-logo">Bb</div>
         <h1>Blackboard Bookmarklets</h1>
       </div>
-      <a class="header-link" href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank">
+      <a class="header-link" href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank" rel="noopener">
         ↗ View Repository
       </a>
     </div>
   </header>
 
   <div class="main-wrapper">
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Categories">
       <div class="sidebar-inner">
         <h3>Categories</h3>
         <ul id="category-links"></ul>
@@ -33,7 +33,7 @@
 
     <main class="content">
 
-      <section class="note">
+      <section class="note" role="note">
         <strong>About Bookmarklets:</strong>
         <ul>
           <li><strong>Fragility:</strong> They rely on Blackboard's structure and may break after updates.</li>
@@ -42,59 +42,90 @@
         </ul>
       </section>
 
-      <section class="instructions note">
+      <section class="instructions note" role="note">
         <strong>To install:</strong> Drag a bookmarklet button to your browser's bookmarks bar.
+        If dragging doesn't work, right-click the button and choose <em>Bookmark This Link</em>,
+        or click <strong>Copy</strong> to manually create a bookmark with the code as the URL.
       </section>
 
       <div id="bookmarklet-sections"></div>
 
-      <div class="disclaimer note">
-        <strong>Disclaimer:</strong> These bookmarklets are experimental and provided as-is. Use at your own risk.
+      <div class="disclaimer note" role="note">
+        <strong>Disclaimer:</strong> These bookmarklets are experimental and provided as-is,
+        without warranty or official support from Blackboard or Anthology. Use at your own risk,
+        and only in non-production or test environments until thoroughly verified.
       </div>
 
     </main>
   </div>
 
   <footer>
-    © 2025 Anthology Inc. All rights reserved.
+    © <span id="footer-year"></span> Anthology Inc. All rights reserved.
   </footer>
 
+  <!-- Copy-success toast -->
+  <div id="copyToast" role="status" aria-live="polite">Copied to clipboard!</div>
+
   <!-- README Modal -->
-  <div id="readmeModal">
+  <div id="readmeModal" role="dialog" aria-modal="true" aria-labelledby="readmeModalTitle">
     <div class="modal-inner">
       <div class="modal-header">
         <h3 id="readmeModalTitle">README</h3>
-        <button class="modal-close" onclick="closeModal()">✕</button>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close README">✕</button>
       </div>
       <div id="readmeContent"></div>
     </div>
   </div>
 
   <script>
+    // ── Config ────────────────────────────────────────────────────────────────
     const repoUser = "jkelley-blackboard";
     const repoName = "blackboard-bookmarklets";
     const branch   = "main";
     const jsonPath = "bookmarklets.json";
 
+    // ── Dynamic footer year ───────────────────────────────────────────────────
+    document.getElementById("footer-year").textContent = new Date().getFullYear();
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
     function cleanPath(path) {
       return path.replace(/^refs\/heads\//, "");
     }
 
+    function slugify(text) {
+      return text.replace(/\s+/g, "-").replace(/[^\w-]/g, "");
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    function showToast() {
+      const toast = document.getElementById("copyToast");
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    // ── README modal ──────────────────────────────────────────────────────────
     function showReadme(folder, label) {
       const url = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${cleanPath(folder)}/README.md`;
-      document.getElementById("readmeModalTitle").textContent = label + " — README";
+      const titleEl   = document.getElementById("readmeModalTitle");
+      const contentEl = document.getElementById("readmeContent");
+
+      titleEl.textContent  = label + " — README";
+      contentEl.innerHTML  = '<div class="readme-loading"><div class="spinner"></div><span>Loading…</span></div>';
+      document.getElementById("readmeModal").classList.add("open");
+
+      // Trap focus in modal
+      setTimeout(() => document.querySelector(".modal-close")?.focus(), 50);
+
       fetch(url)
         .then(res => {
           if (!res.ok) throw new Error("README not found");
           return res.text();
         })
         .then(text => {
-          document.getElementById("readmeContent").innerHTML = marked.parse(text);
-          document.getElementById("readmeModal").classList.add("open");
+          contentEl.innerHTML = marked.parse(text);
         })
         .catch(() => {
-          document.getElementById("readmeContent").innerHTML = "<p><em>No README found for this bookmarklet.</em></p>";
-          document.getElementById("readmeModal").classList.add("open");
+          contentEl.innerHTML = "<p><em>No README found for this bookmarklet.</em></p>";
         });
     }
 
@@ -102,14 +133,25 @@
       document.getElementById("readmeModal").classList.remove("open");
     }
 
-    // Close on overlay click
     document.getElementById("readmeModal").addEventListener("click", function(e) {
       if (e.target === this) closeModal();
     });
-
-    // Close on Escape
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
+    // ── Skeleton card builder ─────────────────────────────────────────────────
+    function makeSkeleton() {
+      const card = document.createElement("div");
+      card.className = "bm-card bm-card--skeleton";
+      card.innerHTML = `
+        <div class="skeleton-title"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-footer"></div>
+      `;
+      return card;
+    }
+
+    // ── Main data load ────────────────────────────────────────────────────────
     fetch(jsonPath)
       .then(res => res.json())
       .then(bookmarklets => {
@@ -119,61 +161,48 @@
           categories[bm.category].push(bm);
         });
 
-        const categoryLinks   = document.getElementById("category-links");
+        const categoryLinks     = document.getElementById("category-links");
         const sectionsContainer = document.getElementById("bookmarklet-sections");
 
         Object.entries(categories).forEach(([cat, bms]) => {
-          // Sidebar link
-          const li = document.createElement("li");
-          const a  = document.createElement("a");
-          a.href = `#${cat.replace(/\s+/g, "-")}`;
-          a.textContent = cat;
+          const slug = slugify(cat);
+
+          // ── Sidebar link with count badge ──────────────────────────────────
+          const li    = document.createElement("li");
+          const a     = document.createElement("a");
+          a.href      = `#${slug}`;
+          a.innerHTML = `${cat} <span class="sidebar-count">${bms.length}</span>`;
           li.appendChild(a);
           categoryLinks.appendChild(li);
 
-          // Section
-          const section = document.createElement("section");
+          // ── Section ────────────────────────────────────────────────────────
+          const section     = document.createElement("section");
           section.className = "section";
-          section.id = cat.replace(/\s+/g, "-");
+          section.id        = slug;
 
-          const header = document.createElement("div");
-          header.className = "section-header";
+          const header      = document.createElement("div");
+          header.className  = "section-header";
 
-          const h2 = document.createElement("h2");
-          h2.textContent = cat;
+          const h2          = document.createElement("h2");
+          h2.textContent    = cat;
           header.appendChild(h2);
 
-          const count = document.createElement("span");
-          count.className = "section-count";
+          const count       = document.createElement("span");
+          count.className   = "section-count";
           count.textContent = bms.length;
           header.appendChild(count);
 
           section.appendChild(header);
 
-          const grid = document.createElement("div");
-          grid.className = "grid";
+          const grid        = document.createElement("div");
+          grid.className    = "grid";
 
           bms.forEach(bm => {
-            // Card
-            const card = document.createElement("div");
-            card.className = "bm-card";
+            // Skeleton placeholder
+            const skeleton = makeSkeleton();
+            grid.appendChild(skeleton);
 
-            // Description
-            const desc = document.createElement("p");
-            desc.className = "bm-card-desc";
-            desc.textContent = bm.description;
-            card.appendChild(desc);
-
-            // Footer row: drag button + readme link
-            const footer = document.createElement("div");
-            footer.className = "bm-card-footer";
-
-            const link = document.createElement("a");
-            link.className = "bookmarklet";
-            link.textContent = bm.label;
-            link.title = "Drag to bookmarks bar";
-            link.target = "_blank";
-
+            // Fetch the actual bookmarklet code
             const rawUrl = `https://raw.githubusercontent.com/${repoUser}/${repoName}/${branch}/${cleanPath(bm.path)}`;
             fetch(rawUrl)
               .then(res => {
@@ -181,40 +210,109 @@
                 return res.text();
               })
               .then(code => {
-                const trimmed = code.trim();
-                // If code already starts with javascript: use as-is, otherwise wrap
-                link.href = trimmed.startsWith("javascript:")
+                const trimmed  = code.trim();
+                const href     = trimmed.startsWith("javascript:")
                   ? trimmed
                   : `javascript:${encodeURIComponent(trimmed)}`;
+
+                // Build real card
+                const card     = document.createElement("div");
+                card.className = "bm-card";
+
+                // Card title
+                const title    = document.createElement("h3");
+                title.className = "bm-card-title";
+                title.textContent = bm.label;
+                card.appendChild(title);
+
+                // Description
+                const desc     = document.createElement("p");
+                desc.className = "bm-card-desc";
+                desc.textContent = bm.description;
+                card.appendChild(desc);
+
+                // Footer: drag button + copy button + readme button
+                const footer   = document.createElement("div");
+                footer.className = "bm-card-footer";
+
+                // Drag-to-bookmarks link
+                const link     = document.createElement("a");
+                link.className = "bookmarklet";
+                link.textContent = bm.label;
+                link.title     = "Drag to bookmarks bar";
+                link.href      = href;
+                link.setAttribute("draggable", "true");
+                footer.appendChild(link);
+
+                // Copy button
+                const copyBtn  = document.createElement("button");
+                copyBtn.className = "icon-btn copy-btn";
+                copyBtn.title  = "Copy bookmarklet code";
+                copyBtn.setAttribute("aria-label", `Copy "${bm.label}" bookmarklet code`);
+                copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+                copyBtn.onclick = () => {
+                  navigator.clipboard.writeText(href).then(() => {
+                    copyBtn.classList.add("copied");
+                    showToast();
+                    setTimeout(() => copyBtn.classList.remove("copied"), 2000);
+                  }).catch(() => {
+                    // Fallback for older browsers
+                    const ta = document.createElement("textarea");
+                    ta.value = href; ta.style.position = "fixed"; ta.style.opacity = "0";
+                    document.body.appendChild(ta); ta.select();
+                    document.execCommand("copy"); document.body.removeChild(ta);
+                    showToast();
+                  });
+                };
+                footer.appendChild(copyBtn);
+
+                // README button
+                const readmeBtn = document.createElement("button");
+                readmeBtn.className = "icon-btn readme-btn";
+                readmeBtn.title = "View README";
+                readmeBtn.setAttribute("aria-label", `View README for ${bm.label}`);
+                readmeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`;
+                readmeBtn.onclick = () => {
+                  const folder = bm.path.split("/")[0];
+                  showReadme(folder, bm.label);
+                };
+                footer.appendChild(readmeBtn);
+
+                card.appendChild(footer);
+
+                // Swap skeleton for real card
+                grid.replaceChild(card, skeleton);
               })
               .catch(err => {
                 console.error("Error loading bookmarklet:", bm.label, err);
-                link.href = `javascript:alert('Bookmarklet not found: ${bm.label}')`;
+
+                // Error card (replace skeleton)
+                const card      = document.createElement("div");
+                card.className  = "bm-card bm-card--error";
+
+                const title     = document.createElement("h3");
+                title.className = "bm-card-title";
+                title.textContent = bm.label;
+                card.appendChild(title);
+
+                const msg       = document.createElement("p");
+                msg.className   = "bm-card-desc";
+                msg.textContent = "⚠ Could not load bookmarklet file.";
+                card.appendChild(msg);
+
+                grid.replaceChild(card, skeleton);
               });
-
-            footer.appendChild(link);
-
-            const readmeBtn = document.createElement("a");
-            readmeBtn.className = "readme-btn";
-            readmeBtn.title = "View README";
-            readmeBtn.textContent = "📘";
-            readmeBtn.href = "#";
-            readmeBtn.onclick = (e) => {
-              e.preventDefault();
-              const folder = bm.path.split("/")[0];
-              showReadme(folder, bm.label);
-            };
-            footer.appendChild(readmeBtn);
-
-            card.appendChild(footer);
-            grid.appendChild(card);
           });
 
           section.appendChild(grid);
           sectionsContainer.appendChild(section);
         });
       })
-      .catch(err => console.error("Error loading bookmarklets.json:", err));
+      .catch(err => {
+        console.error("Error loading bookmarklets.json:", err);
+        document.getElementById("bookmarklet-sections").innerHTML =
+          `<div class="load-error">⚠ Failed to load bookmarklets. Please try refreshing the page.</div>`;
+      });
   </script>
 
 </body>
