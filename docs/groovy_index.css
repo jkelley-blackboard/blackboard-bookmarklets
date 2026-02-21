@@ -154,17 +154,6 @@ main.content { flex: 1; min-width: 0; }
 .info-panel strong { color: var(--text); font-weight: 600; }
 .info-panel em     { font-style: italic; }
 
-.intro-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.intro-pill {
-  font-size: 0.72rem; font-weight: 500;
-  color: var(--bb-blue);
-  background: rgba(0,87,168,0.07);
-  border: 1px solid rgba(0,87,168,0.15);
-  border-radius: 99px;
-  padding: 0.18em 0.7em;
-  white-space: nowrap;
-}
-
 .info-rules {
   display: flex;
   flex-direction: column;
