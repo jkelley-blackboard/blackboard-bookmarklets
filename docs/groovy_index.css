@@ -134,35 +134,25 @@ header h1 { font-size: 1.1rem; font-weight: 600; color: #fff; letter-spacing: -0
 /* ── Main content ─────────────────────────────────────────────────────────── */
 main.content { flex: 1; min-width: 0; }
 
-/* ── Info panel (consolidated intro + about + install + disclaimer) ───────── */
+/* ── Info panel ───────────────────────────────────────────────────────────── */
 .info-panel {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
   margin-bottom: 1.75rem;
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-
-/* Top row: description + stats */
-.info-main {
   display: flex;
-  gap: 0;
-  align-items: stretch;
+  flex-direction: column;
+  gap: 0.75rem;
 }
-.info-description {
-  flex: 1;
-  min-width: 0;
-  padding: 1.25rem 1.5rem;
-}
-.info-description p {
+.info-panel p {
   font-size: 0.875rem;
   color: var(--text-mid);
   line-height: 1.65;
-  margin-bottom: 0.65rem;
 }
-.info-description p:last-of-type { margin-bottom: 0.9rem; }
-.info-description strong { color: var(--text); font-weight: 600; }
+.info-panel strong { color: var(--text); font-weight: 600; }
+.info-panel em     { font-style: italic; }
 
 .intro-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .intro-pill {
@@ -175,92 +165,25 @@ main.content { flex: 1; min-width: 0; }
   white-space: nowrap;
 }
 
-/* Right column: stats + github link */
-.info-meta {
+.info-rules {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  padding: 1.25rem 1.75rem;
-  border-left: 1px solid var(--border);
-  background: var(--surface2);
-  flex-shrink: 0;
-}
-.intro-stat {
-  display: flex; flex-direction: column;
-  align-items: center; gap: 1px; min-width: 56px;
-}
-.intro-stat-num {
-  font-size: 1.6rem; font-weight: 600; font-family: var(--mono);
-  color: var(--bb-navy); line-height: 1; letter-spacing: -0.03em;
-}
-.intro-stat-label {
-  font-size: 0.65rem; font-weight: 500; color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.06em;
-}
-.intro-gh-link {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.72rem; font-weight: 500; color: var(--text-muted);
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 0.3em 0.65em;
-  text-decoration: none; white-space: nowrap;
-  transition: color var(--transition), border-color var(--transition), background var(--transition);
-}
-.intro-gh-link:hover {
-  color: var(--bb-blue); border-color: rgba(0,87,168,0.3);
-  background: rgba(0,87,168,0.04);
-}
-
-/* Bottom row: install + note, side by side */
-.info-footer {
-  display: flex;
-  align-items: stretch;
+  gap: 0.3rem;
+  padding-top: 0.5rem;
   border-top: 1px solid var(--border);
-  background: var(--surface2);
 }
-.info-item {
-  flex: 1;
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  padding: 0.7rem 1.5rem;
+.info-rule {
   font-size: 0.8rem;
-  color: var(--text-mid);
-  line-height: 1.5;
+  color: var(--text-muted);
+  line-height: 1.55;
 }
-.info-item-label {
+.info-rule-label {
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding-top: 0.15em;
-}
-.info-item-text em  { font-style: italic; }
-.info-item-text strong { color: var(--text); font-weight: 600; }
-.info-divider {
-  width: 1px;
-  background: var(--border);
-  flex-shrink: 0;
-  align-self: stretch;
-}
-
-@media (max-width: 860px) {
-  .info-footer { flex-direction: column; }
-  .info-divider { width: auto; height: 1px; }
-}
-@media (max-width: 640px) {
-  .info-main { flex-direction: column; }
-  .info-meta {
-    flex-direction: row; border-left: none;
-    border-top: 1px solid var(--border);
-    padding: 0.9rem 1.25rem; justify-content: space-around;
-  }
-  .info-description { padding: 1.1rem 1.25rem; }
-  .info-item { padding: 0.65rem 1.25rem; }
+  color: var(--text-mid);
+  margin-right: 0.4rem;
 }
 
 /* ── Section headings ─────────────────────────────────────────────────────── */

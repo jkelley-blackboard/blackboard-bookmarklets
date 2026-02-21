@@ -34,44 +34,17 @@
     <main class="content">
 
       <section class="info-panel">
-        <div class="info-main">
-          <div class="info-description">
-            <p>
-              A collection of lightweight tools for <strong>Blackboard Learn administrators and support teams</strong>.
-              Each bookmarklet runs directly in your browser on the relevant Blackboard page —
-              no installation, no extensions, no special permissions required.
-            </p>
-            <p>
-              The tools cover common admin workflows: inspecting and comparing system roles and entitlements,
-              pulling additional detail on users and courses, exporting institutional hierarchy data,
-              and surfacing Analytics IDs for Ultra pages.
-            </p>
-            <div class="intro-pills">
-              <span class="intro-pill">🔐 Roles &amp; Entitlements</span>
-              <span class="intro-pill">👤 User &amp; Course Detail</span>
-              <span class="intro-pill">📊 Analytics &amp; Exports</span>
-              <span class="intro-pill">🏛 Institutional Hierarchy</span>
-            </div>
-          </div>
-          <div class="info-meta">
-            <div class="intro-stat"><span class="intro-stat-num" id="intro-total">—</span><span class="intro-stat-label">bookmarklets</span></div>
-            <div class="intro-stat"><span class="intro-stat-num" id="intro-cats">—</span><span class="intro-stat-label">categories</span></div>
-            <a class="intro-gh-link" href="https://github.com/jkelley-blackboard/blackboard-bookmarklets" target="_blank" rel="noopener">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-              GitHub
-            </a>
-          </div>
+        <p>A collection of lightweight tools for <strong>Blackboard Learn administrators and support teams</strong>. Each bookmarklet runs directly in your browser on the relevant Blackboard page — no installation, no extensions, no special permissions required.</p>
+        <p>The tools cover common admin workflows: inspecting and comparing system roles and entitlements, pulling additional detail on users and courses, exporting institutional hierarchy data, and surfacing Analytics IDs for Ultra pages.</p>
+        <div class="intro-pills">
+          <span class="intro-pill">🔐 Roles &amp; Entitlements</span>
+          <span class="intro-pill">👤 User &amp; Course Detail</span>
+          <span class="intro-pill">📊 Analytics &amp; Exports</span>
+          <span class="intro-pill">🏛 Institutional Hierarchy</span>
         </div>
-        <div class="info-footer">
-          <div class="info-item">
-            <span class="info-item-label">Install</span>
-            <span class="info-item-text">Drag a bookmarklet button to your browser's bookmarks bar. If dragging doesn't work, right-click and choose <em>Bookmark This Link</em>, or use the <strong>Copy</strong> button to save the code manually.</span>
-          </div>
-          <div class="info-divider"></div>
-          <div class="info-item">
-            <span class="info-item-label">Note</span>
-            <span class="info-item-text">Bookmarklets execute JavaScript directly and rely on Blackboard's page structure — they may break after updates. Only use from trusted sources and verify in a test environment before production use.</span>
-          </div>
+        <div class="info-rules">
+          <div class="info-rule"><span class="info-rule-label">Install</span> Drag a bookmarklet button to your browser's bookmarks bar. If dragging doesn't work, right-click and choose <em>Bookmark This Link</em>, or use the <strong>Copy</strong> button to save the code manually.</div>
+          <div class="info-rule"><span class="info-rule-label">Note</span> Bookmarklets execute JavaScript directly and rely on Blackboard's page structure — they may break after updates. Only use from trusted sources and verify in a test environment before production use.</div>
         </div>
       </section>
 
@@ -183,10 +156,6 @@
           if (!categories[bm.category]) categories[bm.category] = [];
           categories[bm.category].push(bm);
         });
-
-        // Populate intro stats
-        document.getElementById("intro-total").textContent = bookmarklets.length;
-        document.getElementById("intro-cats").textContent  = Object.keys(categories).length;
 
         const categoryLinks     = document.getElementById("category-links");
         const sectionsContainer = document.getElementById("bookmarklet-sections");
