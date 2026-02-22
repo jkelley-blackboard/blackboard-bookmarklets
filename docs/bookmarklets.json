@@ -68,7 +68,7 @@
   {
     "label": "LTI Placements Export",
     "description": "Generate a list of LTI placements",
-    "path": "lti_placements/lti_placements_bookmarklet_min.js",
+    "path": "lti_placements/lti_placements_bookmarklet.min.js",
     "category": "Extractors"
   }
 ]
