@@ -53,26 +53,28 @@
         }
         #${P} .t input  { flex: 1; }
         #${P} .t button {
-            padding: 3px 8px;
+            padding: 4px 12px;
             background: #0057a8; color: #fff;
             border: none; border-radius: 3px;
-            font-size: 11px; cursor: pointer;
+            font-size: 11px; font-weight: 600; cursor: pointer;
+            white-space: nowrap;
         }
-        #${P} .b  { flex: 1; overflow-y: auto; padding: 10px 13px; }
+        #${P} .t button:hover { background: #0073cc; }
+        #${P} .b  { flex: 1; overflow-y: scroll; padding: 10px 13px; }
         #${P} .dh {
             font-size: 11px; font-weight: 700; color: #002447;
-            border-bottom: 1px solid #ddd;
-            padding: 7px 0 3px; margin-bottom: 3px;
+            border-bottom: 2px solid #002447;
+            padding: 12px 0 4px; margin-bottom: 4px;
             display: flex; gap: 6px; align-items: baseline;
         }
         #${P} .dh small { margin-left: auto; color: #aaa; font-weight: 400; }
         #${P} .r {
-            padding: 4px 7px;
-            border: 1px solid #eee; border-radius: 3px;
-            margin-bottom: 3px;
+            padding: 6px 8px;
+            border: 1px solid #ddd; border-radius: 3px;
+            margin-bottom: 6px;
             display: flex; gap: 8px;
         }
-        #${P} .r:hover  { border-color: #aac; }
+        #${P} .r:hover  { border-color: #aac; background: #fafcff; }
         #${P} .r .m     { flex: 1; min-width: 0; }
         #${P} .r .n     { font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #${P} .r .d     { font-size: 11px; color: #888; }
