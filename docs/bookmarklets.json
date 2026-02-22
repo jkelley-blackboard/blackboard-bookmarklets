@@ -64,5 +64,11 @@
     "description": "Generates a list of UUID values for input usernames.",
     "path": "uuid_lookup/uuid_lookup_bookmarklet_min.js",
     "category": "Extractors"
+  },
+  {
+    "label": "LTI Placements Export",
+    "description": "Generate a list of LTI placements",
+    "path": "lti_placements/lti_placements_bookmarklet_min.js",
+    "category": "Extractors"
   }
 ]
