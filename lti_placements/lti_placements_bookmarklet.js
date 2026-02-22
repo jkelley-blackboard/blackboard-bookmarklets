@@ -41,8 +41,8 @@
             padding: 6px 13px;
             background: #f5f7fa;
             border-bottom: 1px solid #ddd;
-            display: flex; gap: 5px;
-            flex-shrink: 0;
+            display: flex; flex-wrap: nowrap; gap: 5px; align-items: center;
+            flex-shrink: 0; overflow: hidden;
         }
         #${P} .t input, #${P} .t select {
             padding: 3px 6px;
@@ -50,14 +50,17 @@
             border-radius: 3px;
             font-size: 11px;
             font-family: inherit;
+            min-width: 0;
         }
-        #${P} .t input  { flex: 1; }
+        #${P} .t input  { flex: 1; min-width: 80px; }
+        #${P} .t select { flex-shrink: 0; max-width: 110px; }
         #${P} .t button {
-            padding: 4px 12px;
+            padding: 5px 14px;
             background: #0057a8; color: #fff;
             border: none; border-radius: 3px;
-            font-size: 11px; font-weight: 600; cursor: pointer;
-            white-space: nowrap;
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            white-space: nowrap; flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,.2);
         }
         #${P} .t button:hover { background: #0073cc; }
         #${P} .b  { flex: 1; overflow-y: scroll; padding: 10px 13px; }
@@ -69,12 +72,14 @@
         }
         #${P} .dh small { margin-left: auto; color: #aaa; font-weight: 400; }
         #${P} .r {
-            padding: 6px 8px;
-            border: 1px solid #ddd; border-radius: 3px;
-            margin-bottom: 6px;
-            display: flex; gap: 8px;
+            padding: 7px 10px;
+            border: 1px solid #ccc; border-radius: 4px;
+            margin-bottom: 7px;
+            display: flex; gap: 10px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,.06);
         }
-        #${P} .r:hover  { border-color: #aac; background: #fafcff; }
+        #${P} .r:hover  { border-color: #7aaddc; background: #f0f6ff; }
         #${P} .r .m     { flex: 1; min-width: 0; }
         #${P} .r .n     { font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #${P} .r .d     { font-size: 11px; color: #888; }
@@ -91,7 +96,7 @@
         <style>${css}</style>
         <div class=h>
             <b>LTI Placements</b>
-            <div>
+            <div style="display:flex;align-items:center;gap:10px">
                 <span id=lpc></span>
                 <button onclick="document.getElementById('${ID}').remove()">✕</button>
             </div>
@@ -125,7 +130,16 @@
         { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]
     ));
 
-    const fmt = t => t ? t.replace(/([A-Z])/g, " $1").trim() : "?";
+    const fmt = t => {
+        if (!t) return "?";
+        // Handle known compound words before splitting on capitals
+        return t
+            .replace("UltraUI", "Ultra UI")
+            .replace("ContentItem", "Content Item")
+            .replace("BaseNav", "Base Nav")
+            .replace("CourseNav", "Course Nav")
+            .replace(/([A-Z])/g, " $1").trim();
+    };
 
     const av = p => p.availability?.available !== "No";
 
