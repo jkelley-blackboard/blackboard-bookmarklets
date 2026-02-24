@@ -1,0 +1,522 @@
+function bbExtractorPayload(){
+
+  // ── Guard: clicking the bookmarklet again closes the panel ──────────────
+  var PANEL_ID="__bbx__";
+  var ex=document.getElementById(PANEL_ID);
+  if(ex){ex.remove();return;}
+
+  var origin=location.origin;
+
+  // ── courseId is the Blackboard internal PK1 ID, e.g. _11931_1 ───────────
+  // Extracted from the Ultra URL pattern: /ultra/courses/{courseId}/...
+  function getCourseId(){
+    var m=location.pathname.match(/\/ultra\/courses\/([^\/]+)/);
+    return m?m[1]:null;
+  }
+
+  // ── XSRF token — only needed for the analysis trigger POST ───────────────
+  // BB embeds the token in /webapps/login/ page HTML as: xsrf: "uuid..."
+  // It is not available as a cookie or in the current page scripts.
+  // getXsrf() returns a Promise so we can fetch it when needed.
+  function getXsrf(){
+    // Try cookies first (some BB instances do use a cookie)
+    var names=["BBXSRF","X-Blackboard-XSRF","bb_xsrf"];
+    for(var i=0;i<names.length;i++){
+      var m=document.cookie.match(new RegExp("(?:^|;\\s*)"+names[i]+"=([^;]+)"));
+      if(m)return Promise.resolve(decodeURIComponent(m[1]));
+    }
+    var any=document.cookie.match(/(?:^|;\s*)[^=]*(?:xsrf|csrf)[^=]*=([^;]+)/i);
+    if(any)return Promise.resolve(decodeURIComponent(any[1]));
+    // Try inline scripts on current page
+    var scripts=document.querySelectorAll("script:not([src])");
+    for(var i=0;i<scripts.length;i++){
+      var m=scripts[i].textContent.match(/xsrf\s*:\s*"([a-zA-Z0-9\-]+)"/);
+      if(m)return Promise.resolve(m[1]);
+    }
+    // Fetch from login page — reliable source on this BB instance
+    return fetch(origin+"/webapps/login/",{credentials:"include"})
+      .then(function(r){return r.text();})
+      .then(function(html){
+        var m=html.match(/xsrf\s*:\s*"([a-zA-Z0-9\-]+)"/);
+        return m?m[1]:null;
+      });
+  }
+
+  // ── Thin fetch wrapper ────────────────────────────────────────────────────
+  // credentials:"include" sends the BbRouter session cookie automatically.
+  // XSRF header is only attached when withXsrf=true (POST requests only).
+  // Returns parsed JSON for JSON responses, raw text for everything else.
+  function api(path,opts,withXsrf){
+    opts=opts||{};
+    var headers={"Accept":"application/json"};
+    if(opts&&opts.method==="POST")headers["Content-Type"]="application/json";
+    if(opts.headers){for(var k in opts.headers)headers[k]=opts.headers[k];}
+    function doFetch(){
+      return fetch(origin+path,Object.assign({},opts,{credentials:"include",headers:headers}))
+        .then(function(res){
+          if(!res.ok)throw new Error(res.status+" "+path.split("?")[0].slice(-40));
+          var ct=res.headers.get("content-type")||"";
+          if(ct.includes("json"))return res.json();
+          if(ct.toLowerCase().includes("utf-16")){
+            return res.arrayBuffer().then(function(buf){
+              return new TextDecoder("utf-16le").decode(buf);
+            });
+          }
+          return res.text();
+        });
+    }
+    if(withXsrf){
+      return getXsrf().then(function(xsrf){
+        if(xsrf)headers["x-blackboard-xsrf"]=xsrf;
+        return doFetch();
+      });
+    }
+    return doFetch();
+  }
+
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+  // ── Question analysis poller ──────────────────────────────────────────────
+  // Analysis computation is async server-side. We POST to trigger it, then
+  // GET the same endpoint repeatedly until state transitions from
+  // "InProgress" to "Complete". Observed completion: 2-10s for small tests.
+  // Max wait: 40 polls x 1.5s = 60 seconds before timeout error.
+  function pollAnalysis(courseId,assessmentId,onTick){
+    var i=0;
+    function attempt(){
+      if(i>=40)return Promise.reject(new Error("Analysis timed out"));
+      return sleep(1500).then(function(){
+        return api("/learn/api/v1/courses/"+courseId+"/questionAnalysis/assessments/"+assessmentId);
+      }).then(function(d){
+        var state=d&&d.analysisReportDetails&&d.analysisReportDetails.state;
+        if(state==="Complete")return d;
+        if(state&&state!=="InProgress")throw new Error("Analysis: "+state);
+        onTick(++i);
+        return attempt();
+      });
+    }
+    return attempt();
+  }
+
+  // ── TSV parser ────────────────────────────────────────────────────────────
+  // The results/export endpoint returns a tab-delimited file (follows a 302
+  // redirect to the legacy AssessmentResultsDownload servlet).
+  function parseTsv(text){
+    var lines=text.trim().split(/\r?\n/);
+    if(lines.length<2)return[];
+    var hdrs=lines[0].split("\t").map(function(h){return h.replace(/^"|"$/g,"").trim();});
+    return lines.slice(1).filter(function(l){return l.trim();}).map(function(line){
+      var vals=line.split("\t").map(function(v){return v.replace(/^"|"$/g,"").trim();});
+      var o={};
+      hdrs.forEach(function(h,i){o[h]=vals[i]!=null?vals[i]:"";});
+      return o;
+    });
+  }
+
+  // ── CSV serialiser ────────────────────────────────────────────────────────
+  // RFC 4180 compliant. \x22 used instead of literal " to keep strings clean.
+  function toCsv(rows){
+    if(!rows.length)return"";
+    function esc(v){
+      if(v==null)return"";
+      var s=String(v).replace(/"/g,"\x22\x22");
+      return /[",\n\r\t]/.test(s)?("\x22"+s+"\x22"):s;
+    }
+    var hdr=Object.keys(rows[0]);
+    return[hdr.map(esc).join(",")].concat(rows.map(function(r){
+      return hdr.map(function(h){return esc(r[h]);}).join(",");
+    })).join("\n");
+  }
+
+  function safeName(s){
+    return String(s).replace(/[^a-zA-Z0-9_\-]/g,"_").replace(/_+/g,"_").slice(0,40);
+  }
+
+  function dl(filename,content,mime){
+    var blob=new Blob([content],{type:mime});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url;a.download=filename;a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  }
+
+  function mk(tag,cssText,html){
+    var el=document.createElement(tag);
+    if(cssText)el.style.cssText=cssText;
+    if(html)el.innerHTML=html;
+    return el;
+  }
+
+  function css(parts){return parts.join("");}
+
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PANEL SHELL
+  // ═══════════════════════════════════════════════════════════════════════════
+  var panel=mk("div",css([
+    "position:fixed;top:14px;right:14px;width:440px;max-height:84vh;",
+    "background:#ffffff;border:1px solid #d1d5db;border-radius:10px;",
+    "font-family:system-ui,sans-serif;font-size:14px;color:#111827;",
+    "z-index:2147483647;box-shadow:0 8px 32px rgba(0,0,0,.18);",
+    "display:flex;flex-direction:column;overflow:hidden;"
+  ]));
+  panel.id=PANEL_ID;
+
+  var hdr=mk("div","display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#f9fafb;flex-shrink:0;");
+  var titleRow=mk("div","display:flex;align-items:center;gap:8px;");
+  titleRow.innerHTML="<span style=\"color:#1d4ed8;font-weight:700;font-size:15px\">&#x2B21; bbextractor</span>";
+  var courseTag=mk("span","font-size:11px;color:#6b7280;background:#f3f4f6;border:1px solid #d1d5db;padding:2px 8px;border-radius:4px;");
+  titleRow.appendChild(courseTag);
+  var closeBtn=mk("button","background:none;border:none;color:#9ca3af;cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;","\xd7");
+  closeBtn.onclick=function(){panel.remove();};
+  hdr.appendChild(titleRow);hdr.appendChild(closeBtn);panel.appendChild(hdr);
+
+  var body=mk("div","padding:14px 16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;");
+  panel.appendChild(body);
+
+  var footer=mk("div","padding:12px 16px;border-top:1px solid #e5e7eb;background:#f9fafb;display:none;align-items:center;gap:8px;flex-shrink:0;");
+  panel.appendChild(footer);
+  document.body.appendChild(panel);
+
+  var statusEl=mk("div","font-size:13px;color:#6b7280;flex-shrink:0;");
+  body.appendChild(statusEl);
+  function setStatus(msg,color){statusEl.style.color=color||"#505060";statusEl.textContent=msg;}
+
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PHASE 1: SCAN
+  //
+  // Use v1 columns (not v2) — v1 returns assessmentSubtype which v2 dropped.
+  // Tests have no assessmentSubtype; Assignments have assessmentSubtype:"Assignment".
+  // This is the only reliable server-side field that distinguishes the two,
+  // since both share scoreProviderHandle "resource/x-bb-assessment" and both
+  // use contentHandler.id "resource/x-bb-asmt-test-link" on the contents API.
+  //
+  // assessmentId is resolved at extract time via the public contents endpoint:
+  // GET /learn/api/public/v1/courses/{courseId}/contents/{contentId}
+  // -> contentHandler.assessmentId
+  // ═══════════════════════════════════════════════════════════════════════════
+  var courseId=getCourseId();
+  if(!courseId){setStatus("\u26a0 Navigate to a Blackboard course first.","#eab308");return;}
+  courseTag.textContent=courseId;
+  setStatus("Scanning gradebook\u2026");
+
+  var testColumns=[],listEl=null,courseName=null;
+
+  // Internal v1 endpoint (no "public" in path) returns full schema including
+  // scoreProviderHandle and assessmentSubtype — the fields we need to distinguish
+  // Tests from Assignments. The public/v1 endpoint returns a stripped v2-style
+  // schema that omits both fields entirely.
+  Promise.all([
+    api("/learn/api/v1/courses/"+courseId),
+    api("/learn/api/v1/courses/"+courseId+"/gradebook/columns?limit=200&includeHidden=false")
+  ])
+  .then(function(responses){
+    var courseData=responses[0],data=responses[1];
+    // Show human-readable course name in header, keep ID as secondary
+    courseName=courseData&&(courseData.name||courseData.displayName||courseData.courseId)||courseId;
+    if(courseName){
+      courseTag.title=courseId;
+      courseTag.textContent=courseName+" ("+courseId+")";
+    }
+    // Tests: assessment handle + contentId + no assessmentSubtype
+    // Assignments: same handle + contentId + assessmentSubtype === "Assignment"
+    testColumns=(data.results||[]).filter(function(c){
+      return !c.deleted &&
+             c.scoreProviderHandle==="resource/x-bb-assessment" &&
+             c.contentId &&
+             !c.assessmentSubtype;
+    });
+
+    if(!testColumns.length){setStatus("No tests found.","#eab308");return;}
+    setStatus(testColumns.length+" test"+(testColumns.length!==1?"s":"")+" found \u2014 select to extract","#f97316");
+
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PHASE 2: SELECT
+    // ═══════════════════════════════════════════════════════════════════════
+    var ctrl=mk("div","display:flex;gap:6px;flex-shrink:0;");
+    function mkCtrl(label){
+      var b=mk("button","font-family:inherit;font-size:12px;background:none;border:1px solid #d1d5db;color:#6b7280;padding:4px 10px;border-radius:4px;cursor:pointer;");
+      b.textContent=label;return b;
+    }
+    var selAll=mkCtrl("Select All"),selNone=mkCtrl("None");
+    ctrl.appendChild(selAll);ctrl.appendChild(selNone);body.appendChild(ctrl);
+
+    listEl=mk("div","display:flex;flex-direction:column;gap:4px;");
+    body.appendChild(listEl);
+
+    testColumns.forEach(function(col){
+      var row=mk("div","display:flex;align-items:center;gap:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px;cursor:pointer;transition:border-color .12s;");
+      row.dataset.colId=col.id;
+
+      var cb=mk("input","width:15px;height:15px;cursor:pointer;accent-color:#1d4ed8;flex-shrink:0;");
+      cb.type="checkbox";cb.dataset.colId=col.id;
+
+      var info=mk("div","flex:1;min-width:0;");
+      var nm=mk("div","font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#111827;");
+      var displayName=col.columnName||col.name||col.id;
+      nm.title=displayName+" ("+col.id+")";
+      nm.textContent=displayName;
+      var idTag=mk("span","font-size:10px;color:#9ca3af;margin-left:6px;font-weight:400;");
+      idTag.textContent="("+col.id+")";
+      nm.appendChild(idTag);
+
+      var meta=mk("div","font-size:12px;color:#6b7280;margin-top:2px;");
+      var pts=col.possible!=null?col.possible+"pts":"\u2014";
+      var due=col.dueDate?new Date(col.dueDate).toLocaleDateString():"no due date";
+      meta.textContent=pts+" \u00b7 due "+due;
+      info.appendChild(nm);info.appendChild(meta);
+
+      // Badge updated live: triggering... → analyzing N → done / error
+      var badge=mk("span","font-size:12px;color:#9ca3af;min-width:72px;text-align:right;flex-shrink:0;");
+      badge.id="__bbx_b_"+col.id+"__";
+
+      row.appendChild(cb);row.appendChild(info);row.appendChild(badge);
+      listEl.appendChild(row);
+
+      function toggle(){
+        row.style.borderColor=cb.checked?"#1d4ed8":"#e5e7eb";
+        row.style.background=cb.checked?"#eff6ff":"#f9fafb";
+        updateBtn();
+      }
+      row.onclick=function(e){if(e.target!==cb)cb.checked=!cb.checked;toggle();};
+      cb.onchange=toggle;
+    });
+
+    selAll.onclick=function(){
+      listEl.querySelectorAll("input").forEach(function(c){
+        c.checked=true;
+        c.closest("div[data-col-id]").style.borderColor="#1d4ed8";
+        c.closest("div[data-col-id]").style.background="#eff6ff";
+      });updateBtn();
+    };
+    selNone.onclick=function(){
+      listEl.querySelectorAll("input").forEach(function(c){
+        c.checked=false;
+        c.closest("div[data-col-id]").style.borderColor="#e5e7eb";
+        c.closest("div[data-col-id]").style.background="#f9fafb";
+      });updateBtn();
+    };
+
+    footer.style.display="flex";
+    var extractBtn=mk("button","flex:1;background:#1d4ed8;border:none;color:#ffffff;font-family:inherit;font-size:13px;font-weight:600;padding:9px;border-radius:6px;cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .12s;","\u25b6  Extract Selected");
+    footer.appendChild(extractBtn);
+
+    function updateBtn(){
+      var any=Array.from(listEl.querySelectorAll("input")).some(function(c){return c.checked;});
+      extractBtn.style.opacity=any?"1":".4";
+      extractBtn.style.pointerEvents=any?"auto":"none";
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PHASE 3: EXTRACT
+    //
+    // For each selected test:
+    //   1. Fetch public contents to get assessmentId (contentHandler.assessmentId)
+    //   2. POST to trigger question analysis (requires XSRF token)
+    //   3. Concurrently: poll analysis until Complete + download results TSV
+    //   4. Assemble and offer CSV + JSON downloads
+    //
+    // Tests are processed sequentially to avoid hammering the server.
+    // Within each test, steps 3+4 run in parallel via Promise.all.
+    // ═══════════════════════════════════════════════════════════════════════
+    extractBtn.onclick=function(){
+      extractBtn.disabled=true;
+      extractBtn.textContent="\u27f3  Running\u2026";
+      selAll.style.display="none";selNone.style.display="none";
+      listEl.querySelectorAll("input").forEach(function(c){c.disabled=true;});
+
+      var selected=testColumns.filter(function(col){
+        var c=listEl.querySelector("input[data-col-id=\""+col.id+"\"]");
+        return c&&c.checked;
+      });
+
+      setStatus("Extracting "+selected.length+" test"+(selected.length!==1?"s":"")+"\u2026","#7dd3fc");
+      var done=0;
+      var allStudentRows=[];
+      var allAnalysisResults=[];
+      var chain=Promise.resolve();
+
+      selected.forEach(function(col){
+        chain=chain.then(function(){
+          var colId=col.id;
+          var testName=col.columnName||col.name||colId;
+
+          function setBadge(t,c){
+            var el=document.getElementById("__bbx_b_"+colId+"__");
+            if(el){el.textContent=t;el.style.color=c||"#505060";}
+          }
+
+          setBadge("resolving\u2026","#7dd3fc");
+
+          // Step 1: Resolve assessmentId via public contents endpoint.
+          // contentHandler.assessmentId is the internal PK1 used by the
+          // analysis endpoints.
+          return api("/learn/api/v1/courses/"+courseId+"/contents/"+col.contentId)
+          .then(function(content){
+            // assessmentId at contentDetail path (public v1 contents response structure)
+            var assessmentId=content&&
+              content.contentDetail&&
+              content.contentDetail["resource/x-bb-asmt-test-link"]&&
+              content.contentDetail["resource/x-bb-asmt-test-link"].test&&
+              content.contentDetail["resource/x-bb-asmt-test-link"].test.assessment&&
+              content.contentDetail["resource/x-bb-asmt-test-link"].test.assessment.id;
+            if(!assessmentId)throw new Error("assessmentId not found");
+
+            // Step 2: Trigger analysis — POST requires XSRF token
+            setBadge("triggering\u2026","#7dd3fc");
+            return api(
+              "/learn/api/v1/courses/"+courseId+"/questionAnalysis/assessments/"+assessmentId,
+              {method:"POST",body:"{}"},
+              true
+            )
+            .then(function(){
+              setBadge("analyzing\u2026","#eab308");
+
+              // Steps 3 & 4: analysis poll + results export run concurrently.
+              // The export does not depend on analysis completion.
+              return Promise.all([
+                pollAnalysis(courseId,assessmentId,function(n){setBadge("analyzing\u2026 "+n,"#eab308");}),
+                api("/learn/api/v1/courses/"+courseId+"/gradebook/columns/"+colId+"/results/export?delimiter=TAB&resultFormat=QUESTION_AND_USER&attempts=ALL")
+              ]);
+            })
+            .then(function(results){
+              var analysis=results[0],resultText=results[1];
+
+              // Pass TSV rows through as-is, prepending course_id and test_name.
+              // No filtering or column remapping — preserves full fidelity with
+              // the manual BB export including Additional Content rows.
+              var studentRows=[];
+              if(typeof resultText==="string"&&resultText.indexOf("\t")>=0){
+                parseTsv(resultText).forEach(function(r){
+                  var row={course_id:courseName||courseId,test_name:testName};
+                  Object.keys(r).forEach(function(k){row[k]=r[k];});
+                  studentRows.push(row);
+                });
+              }
+
+              // Build analysis JSON.
+              // discrimination = -99 is BB sentinel for "cannot be calculated"
+              // (e.g. all students answered identically).
+              var summary=(analysis&&analysis.summaryStatsDetails)||{};
+              var report=(analysis&&analysis.analysisReportDetails)||{};
+              var analysisJson={
+                course_id:courseId,
+                test_name:testName,
+                assessment_id:assessmentId,
+                analysis_id:report.analysisId||"",
+                extracted_at:new Date().toISOString(),
+                summary:{
+                  submitted:summary.submitted,
+                  possible_attempts:summary.possibleAttempts,
+                  possible_points:summary.possiblePoints,
+                  unique_questions:summary.uniqueQuestionCount,
+                  avg_score:summary.avgScore,
+                  avg_duration_secs:summary.avgDurationSecs,
+                  attempt_setting:summary.attempt,
+                  difficulty:{
+                    high:summary.difficultyHigh,
+                    medium:summary.difficultyMedium,
+                    low:summary.difficultyLow
+                  },
+                  discrimination:{
+                    good:summary.discriminationGood,
+                    fair:summary.discriminationFair,
+                    poor:summary.discriminationPoor
+                  }
+                },
+                questions:((analysis&&analysis.questionDetailsList)||[]).map(function(q){
+                  var qs=q.questionStatsDetails||{};
+                  return{
+                    question_id:q.questionId,
+                    question_title:qs.questionTitle||qs.questionDesc||"",
+                    question_type:qs.questionType,
+                    submissions:qs.submissions,
+                    avg_score:qs.avgScore,
+                    difficulty:qs.difficulty,
+                    discrimination:qs.discrimination,
+                    std_dev:qs.stdDev,
+                    std_err:qs.stdErr,
+                    not_answered:qs.notAnswered,
+                    from_random_block:qs.fromRandomBlock,
+                    from_question_set:qs.fromQuestionSet,
+                    question_modified:qs.questionModified,
+                    not_all_graded:qs.notAllGraded,
+                    quartile_distributions:q.patternOneList||[]
+                  };
+                })
+              };
+
+
+              // ═══════════════════════════════════════════════════════════
+              // PHASE 4: DOWNLOAD BUTTONS
+              // Inserted under the test row immediately on completion.
+              // ═══════════════════════════════════════════════════════════
+              allStudentRows=allStudentRows.concat(studentRows);
+              allAnalysisResults.push(analysisJson);
+              setBadge("\u2713 done","#22d3a5");
+              done++;
+              setStatus(done+"/"+selected.length+" complete","#22d3a5");
+
+              var row=listEl.querySelector("div[data-col-id=\""+colId+"\"]");
+              if(row){
+                var dlRow=mk("div","display:flex;gap:6px;padding:6px 12px 10px 38px;align-items:center;");
+                function mkDlBtn(label,bg,border,color){
+                  var b=mk("button","font-family:inherit;font-size:12px;font-weight:600;background:"+bg+";border:1px solid "+border+";color:"+color+";padding:5px 12px;border-radius:5px;cursor:pointer;");
+                  b.textContent=label;return b;
+                }
+                var csvBtn=mkDlBtn("\u2193 CSV","#ecfdf5","#059669","#065f46");
+                csvBtn.onclick=function(){
+                  dl(safeName(courseName||courseId)+"_"+safeName(testName)+"_results.csv",toCsv(studentRows),"text/csv;charset=utf-8;");
+                };
+                var jsonBtn=mkDlBtn("\u2193 JSON","#eef2ff","#6366f1","#3730a3");
+                jsonBtn.onclick=function(){
+                  dl(safeName(courseName||courseId)+"_"+safeName(testName)+"_analysis.json",JSON.stringify(analysisJson,null,2),"application/json");
+                };
+                var note=mk("span","font-size:12px;color:#9ca3af;margin-left:6px;");
+                note.textContent=studentRows.length+" rows \u00b7 "+analysisJson.questions.length+"q";
+                dlRow.appendChild(csvBtn);dlRow.appendChild(jsonBtn);dlRow.appendChild(note);
+                row.parentNode.insertBefore(dlRow,row.nextSibling);
+              }
+            });
+          })
+          .catch(function(err){
+            setBadge("\u2717 "+err.message.slice(0,26),"#f43f5e");
+          });
+        });
+      });
+
+      chain.then(function(){
+        extractBtn.textContent=done===selected.length?"\u2713 Done":done+"/"+selected.length+" done";
+        if(done!==selected.length)setStatus(done+"/"+selected.length+" succeeded","#eab308");
+        if(selected.length>1&&allStudentRows.length>0){
+          var dlAll=mk("div","display:flex;gap:6px;padding:10px 14px 4px;border-top:1px solid #e5e7eb;flex-shrink:0;align-items:center;");
+          var lbl=mk("span","font-size:12px;color:#6b7280;margin-right:4px;");
+          lbl.textContent="Download All:";
+          function mkDlBtn2(label,bg,border,color){
+            var b=mk("button","font-family:inherit;font-size:12px;font-weight:600;background:"+bg+";border:1px solid "+border+";color:"+color+";padding:5px 12px;border-radius:5px;cursor:pointer;");
+            b.textContent=label;return b;
+          }
+          var dlAllBtn=mkDlBtn2("\u2193 Download All","#f0f9ff","#0ea5e9","#0369a1");
+          dlAllBtn.onclick=function(){
+            var delay=0;
+            allAnalysisResults.forEach(function(a){
+              var rows=allStudentRows.filter(function(r){return r.test_name===a.test_name;});
+              setTimeout(function(){dl(safeName(courseName||courseId)+"_"+safeName(a.test_name)+"_results.csv",toCsv(rows),"text/csv;charset=utf-8;");},delay);
+              delay+=300;
+              setTimeout(function(){dl(safeName(courseName||courseId)+"_"+safeName(a.test_name)+"_analysis.json",JSON.stringify(a,null,2),"application/json");},delay);
+              delay+=300;
+            });
+          };
+          var note=mk("span","font-size:12px;color:#9ca3af;margin-left:4px;");
+          note.textContent=allAnalysisResults.length+" tests";
+          dlAll.appendChild(lbl);dlAll.appendChild(dlAllBtn);dlAll.appendChild(note);
+          panel.insertBefore(dlAll,footer);
+        }
+      });
+    };
+  })
+  .catch(function(e){setStatus("Error: "+e.message,"#f43f5e");});
+}
