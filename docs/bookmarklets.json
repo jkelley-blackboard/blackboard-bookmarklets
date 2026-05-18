@@ -71,4 +71,10 @@
     "path": "lti_placements/lti_placements_bookmarklet.min.bk.js",
     "category": "Extractors"
   }
+  {
+    "label": "Orphaned Grades",
+    "description": "Analyze Grade Items for Missing Content",
+    "path": "orphan_grades/orphan_grades_bookmarklet.min.bk.js",
+    "category": "Other Tools"
+  }
 ]
