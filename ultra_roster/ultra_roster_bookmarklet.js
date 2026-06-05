@@ -1,16 +1,13 @@
 (async function() {
     try {
-        // Ensure we are on a course roster page
         const courseMatch = location.pathname.match(/courses\/(_\d+_\d+)/);
         if (!courseMatch) return alert("Run on a course roster page only");
         const courseId = courseMatch[1];
 
-        // Fetch course details to display courseId + name
         const courseResp = await fetch(`${location.origin}/learn/api/public/v1/courses/${courseId}?fields=id,courseId,name`);
         const courseJson = await courseResp.json();
         const courseTitle = `${courseJson.courseId} - ${courseJson.name}`;
 
-        // Fetch course roles mapping
         const rolesResp = await fetch(`${location.origin}/learn/api/public/v1/courseRoles?fields=roleId,nameForCourses`);
         const rolesJson = await rolesResp.json();
         const roleMap = {};
@@ -18,25 +15,21 @@
             roleMap[r.roleId] = r.nameForCourses || r.roleId;
         });
 
-        // Fetch users
         const usersResp = await fetch(`${location.origin}/learn/api/public/v1/courses/${courseId}/users?expand=user`);
         const usersJson = await usersResp.json();
 
-        // Build table rows and parallel CSV data
         let rowsHtml = '';
         const csvRows = [['Name','Username','Email','Student ID','Other/Preferred Name','Pronouns','Pronunciation','Role','Availability','Last Login','Last Accessed']];
 
         usersJson.results.forEach(item => {
             const u = item.user || {};
 
-            // Other/Preferred name logic
             let otherName = u.name?.other || '';
             if (otherName) {
                 if (u.name.preferredDisplayName === "OtherName") otherName += ' ✨';
                 else if (u.name.preferredDisplayName === "Both") otherName += ' ➕';
             }
 
-            // Pronunciation text and audio icon
             let pron = u.pronunciation || '';
             if (u.pronunciationAudio?.viewUrl) pron += (pron ? ' ' : '') + '🔊';
 
@@ -49,99 +42,144 @@
 
             csvRows.push([fullName, u.userName || '', email, u.studentId || '', otherName, u.pronouns || '', pron, role, availability, lastLogin, lastAccessed]);
 
-            rowsHtml += `<tr>
-                <td><img src="${u.avatar?.viewUrl || 'https://static.bbcdn.io/images/avatars/default.svg'}" alt=""></td>
-                <td>${fullName}</td>
-                <td>${u.userName || ''}</td>
-                <td>${email}</td>
-                <td>${u.studentId || ''}</td>
-                <td>${otherName}</td>
-                <td>${u.pronouns || ''}</td>
-                <td>${pron}</td>
-                <td>${role}</td>
-                <td>${availability}</td>
-                <td>${lastLogin}</td>
-                <td>${lastAccessed}</td>
-            </tr>`;
+            rowsHtml += `
+                <tr class="MuiTableRow-root">
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">
+                        <div class="MuiAvatar-root MuiAvatar-circular" style="width:32px;height:32px">
+                            <img class="MuiAvatar-img" src="${u.avatar?.viewUrl || 'https://static.bbcdn.io/images/avatars/default.svg'}" alt="${fullName}">
+                        </div>
+                    </td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${fullName}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${u.userName || ''}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${email}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${u.studentId || ''}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${otherName}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${u.pronouns || ''}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${pron}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${role}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${availability}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${lastLogin}</td>
+                    <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${lastAccessed}</td>
+                </tr>`;
         });
 
-        // Create overlay with responsive table
         const overlay = document.createElement('div');
+        overlay.id = 'bbRosterRoot';
         overlay.innerHTML = `
             <style>
-                #bbRosterOverlay {
+                #bbRosterRoot {
                     position: fixed;
-                    top: 2%;
-                    left: 2%;
-                    width: 96%;
-                    height: 96%;
-                    background: #fff;
-                    overflow: auto;
+                    inset: 12px;
                     z-index: 999999;
-                    font-family: sans-serif;
-                    font-size: 10pt;
+                    display: flex;
+                    flex-direction: column;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 8px 40px rgba(0,0,0,.32);
+                    background: #fff;
+                    font-family: inherit;
                 }
-                #bbRosterOverlay .table-container { overflow-x: auto; }
-                #bbRosterOverlay table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    min-width: 1000px;
-                    table-layout: auto;
-                }
-                #bbRosterOverlay th, #bbRosterOverlay td {
-                    border: 1px solid #ccc;
-                    padding: 3px 6px;
-                    text-align: left;
-                    vertical-align: middle;
-                    word-break: break-word;
-                }
-                #bbRosterOverlay th { background: #f0f0f0; }
-                #bbRosterClose, #bbRosterPrint, #bbRosterCsv {
-                    float: right;
-                    cursor: pointer;
-                    background: #333;
+                #bbRosterHeader {
+                    background: var(--bb-theme-primary-color, #1d3557);
                     color: #fff;
-                    border: none;
-                    padding: 4px 8px;
-                    border-radius: 5px;
-                    margin-left: 4px;
+                    padding: 12px 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 16px;
+                    flex-shrink: 0;
                 }
-                #bbRosterCsv { background: #1a6b35; }
-                #bbRosterOverlay img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
+                #bbRosterHeaderTitle { flex: 1; min-width: 0; }
+                #bbRosterHeaderTitle h2 {
+                    margin: 0;
+                    font-size: 1.05rem;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    color: #fff;
+                }
+                #bbRosterHeaderTitle p {
+                    margin: 2px 0 0;
+                    font-size: 0.78rem;
+                    opacity: 0.8;
+                    color: #fff;
+                }
+                #bbRosterHeaderBtns { display: flex; gap: 6px; flex-shrink: 0; }
+                #bbRosterHeaderBtns button {
+                    cursor: pointer;
+                    background: rgba(255,255,255,0.15);
+                    color: #fff;
+                    border: 1px solid rgba(255,255,255,0.4);
+                    padding: 5px 12px;
+                    border-radius: 4px;
+                    font-size: 0.8rem;
+                    font-family: inherit;
+                    white-space: nowrap;
+                    text-transform: none;
+                    box-shadow: none;
+                    line-height: 1.5;
+                }
+                #bbRosterHeaderBtns button:hover { background: rgba(255,255,255,0.28); }
+                #bbRosterContent { flex: 1; overflow: auto; }
+                /* Sticky column headers */
+                #bbRosterRoot thead th.MuiTableCell-head {
+                    position: sticky;
+                    top: 0;
+                    z-index: 1;
+                    background: #f5f5f5;
+                }
+                /* Row hover */
+                #bbRosterRoot .MuiTableRow-root:hover .MuiTableCell-body {
+                    background-color: rgba(0,0,0,0.04);
+                }
+                @media (max-width: 768px) {
+                    #bbRosterRoot { inset: 0; border-radius: 0; }
+                }
                 @media print {
                     @page { size: landscape; margin: 10mm; }
                     body * { visibility: hidden; }
-                    #bbRosterOverlay, #bbRosterOverlay * { visibility: visible; }
-                    #bbRosterOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; box-shadow: none; }
-                    #bbRosterClose, #bbRosterPrint, #bbRosterCsv { display: none; }
+                    #bbRosterRoot, #bbRosterRoot * { visibility: visible; }
+                    #bbRosterRoot { position: absolute; inset: 0; box-shadow: none; border-radius: 0; }
+                    #bbRosterHeader { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    #bbRosterHeaderBtns { display: none; }
+                    #bbRosterRoot thead th { position: static; }
                     tr { page-break-inside: avoid; }
-                    th, td { font-size: 9pt; padding: 2px 4px; }
-                    img { width: 20px; height: 20px; }
                 }
             </style>
-            <div id="bbRosterOverlay">
-                <button id="bbRosterClose">✖ Close</button>
-                <button id="bbRosterPrint">🖨 Print</button>
-                <button id="bbRosterCsv">⬇ Download CSV</button>
-                <h2>📋 Course Roster for ${courseTitle}</h2>
-                <p>${usersJson.results.length} enrolled users</p>
-                <div class="table-container">
-                    <table>
-                        <tr>
-                            <th>Avatar</th>
-                            <th>Name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Student ID</th>
-                            <th>Other/Preferred Name</th>
-                            <th>Pronouns</th>
-                            <th>Pronunciation</th>
-                            <th>Role</th>
-                            <th>Availability</th>
-                            <th>Last Login</th>
-                            <th>Last Accessed</th>
-                        </tr>
-                        ${rowsHtml}
+            <div id="bbRosterHeader">
+                <div id="bbRosterHeaderTitle">
+                    <h2>📋 ${courseTitle}</h2>
+                    <p>${usersJson.results.length} enrolled users</p>
+                </div>
+                <div id="bbRosterHeaderBtns">
+                    <button id="bbRosterCsv">⬇ CSV</button>
+                    <button id="bbRosterPrint">🖨 Print</button>
+                    <button id="bbRosterClose">✖ Close</button>
+                </div>
+            </div>
+            <div id="bbRosterContent">
+                <div class="MuiTableContainer-root">
+                    <table class="MuiTable-root" role="grid">
+                        <thead class="MuiTableHead-root">
+                            <tr class="MuiTableRow-root MuiTableRow-head">
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium"></th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Name</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Username</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Email</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Student ID</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Other / Preferred Name</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Pronouns</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Pronunciation</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Role</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Availability</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Last Login</th>
+                                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Last Accessed</th>
+                            </tr>
+                        </thead>
+                        <tbody class="MuiTableBody-root">
+                            ${rowsHtml}
+                        </tbody>
                     </table>
                 </div>
             </div>
