@@ -42,10 +42,10 @@
     "category": "Enhanced Display"
   },
   {
-    "label": "Ultra Course Roster",
-    "description": "Printable roster from in the Ultra course.",
+    "label": "Bb Course Roster",
+    "description": "Generates a full course roster with avatar, pronouns, role, and access data — printable and CSV-exportable",
     "path": "ultra_roster/ultra_roster_bookmarklet.min.bk.js",
-    "category": "Other Tools"
+    "category": "Extractors"
   },
   {
     "label": "Building Blocks Compare",

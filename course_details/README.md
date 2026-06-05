@@ -99,5 +99,5 @@ Click the “**Clear Icons**” button at the top-right corner of the iframe to:
 
 ## 📄 License
 
-MIT — © Blackboard, rights reserved
+This software is provided as-is, without warranty or support of any kind. Blackboard retains all rights. Use at your own risk.
 

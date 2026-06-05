@@ -81,9 +81,8 @@ If a bookmarklet breaks after a Blackboard update, please open an issue or submi
 
 ## 📜 License
 
-MIT — see [LICENSE](LICENSE) for details.
+This software is provided as-is, without warranty or support of any kind. Blackboard retains all rights. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Created by** [Jeff Kelley](https://github.com/jkelley-blackboard) · Solutions Engineer, Blackboard  
-*Blackboard retains rights to these projects. Provided without warranty or support.*
+**Created by** [Jeff Kelley](https://github.com/jkelley-blackboard) · Solutions Engineer, Blackboard
