@@ -64,7 +64,7 @@ The `node_id` value (e.g. `_957_1`) is the node's internal primary key as return
 
 Ally Departmental Reports require an Institutional Role ID per department node in the format `ALLY_NODE_957_1`, where `957` is the PK1 of the node. Including the `node_id` column gives you this value in `_957_1` format for every node in a single export, making it straightforward to construct the role IDs (e.g. in Excel using `="ALLY_NODE_" & MID(E2,2,LEN(E2)-2)`).
 
-See the [Anthology Ally departmental reports documentation](https://help.anthology.com/ally-lms/en/administrators/ally-institution-report/institution-report-directory/configure-blackboard-departmental-reports.html) for context.
+See the [Blackboard Ally departmental reports documentation](https://help.anthology.com/ally-lms/en/administrators/ally-institution-report/institution-report-directory/configure-blackboard-departmental-reports.html) for context.
 
 ### Sample output with node_id
 

@@ -21,7 +21,7 @@
 
     /* Header */
     header {
-      background: #0a2342; /* Anthology dark blue */
+      background: #0a2342; /* Blackboard dark blue */
       color: white;
       padding: 60px 20px;
       text-align: center;
@@ -41,7 +41,7 @@
       display: inline-block;
       margin-top: 25px;
       padding: 12px 30px;
-      background: #ff6b35; /* Anthology accent orange */
+      background: #ff6b35; /* Blackboard accent orange */
       color: white;
       border-radius: 6px;
       text-decoration: none;
@@ -164,7 +164,7 @@
   </main>
 
   <footer>
-    &copy; 2025 Anthology Inc. and its affiliates. All rights reserved.
+    &copy; 2025 Blackboard Inc. and its affiliates. All rights reserved.
   </footer>
 
   <script>

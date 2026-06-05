@@ -81,4 +81,4 @@ This bookmarklet allows instructors to generate a full course roster directly fr
 
 ## License
 
-MIT License — Anthology retains rights.
+MIT License — Blackboard retains rights.

@@ -3,7 +3,7 @@
 A collection of **experimental bookmarklets** for Blackboard Learn administrators and support teams.
 These lightweight tools run directly in your browser on the relevant Blackboard page — no installation, no extensions, no special permissions required.
 
-> ⚠ **Experimental.** These bookmarklets are provided as-is, without warranty or official support from Blackboard or Anthology. Use at your own risk, and verify behavior in a test environment before using in production. They may break after Blackboard SaaS updates.
+> ⚠ **Experimental.** These bookmarklets are provided as-is, without warranty or official support from Blackboard. Use at your own risk, and verify behavior in a test environment before using in production. They may break after Blackboard SaaS updates.
 
 ---
 
@@ -85,5 +85,5 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Created by** [Jeff Kelley](https://github.com/jkelley-blackboard) · Solutions Engineer, Anthology  
-*Anthology retains rights to these projects. Provided without warranty or support.*
+**Created by** [Jeff Kelley](https://github.com/jkelley-blackboard) · Solutions Engineer, Blackboard  
+*Blackboard retains rights to these projects. Provided without warranty or support.*

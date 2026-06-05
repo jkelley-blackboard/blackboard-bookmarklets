@@ -99,5 +99,5 @@ Click the “**Clear Icons**” button at the top-right corner of the iframe to:
 
 ## 📄 License
 
-MIT — © Anthology, rights reserved
+MIT — © Blackboard, rights reserved
 
