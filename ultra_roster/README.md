@@ -1,6 +1,6 @@
 # Blackboard Course Roster Bookmarklet
 
-This bookmarklet allows instructors to generate a full course roster directly from the Blackboard Ultra interface. It pulls all enrolled users via the REST API, enriches the data with course roles, and displays a responsive, print-friendly table including avatars, names, pronouns, and more.
+This bookmarklet allows instructors to generate a full course roster directly from the Blackboard Ultra interface. It pulls all enrolled users via the REST API, enriches the data with course roles, and displays a responsive, print-friendly table that blends seamlessly with the Ultra UI.
 
 ---
 
@@ -20,9 +20,11 @@ This bookmarklet allows instructors to generate a full course roster directly fr
   - Availability
   - Last Login
   - Last Access
-- Responsive table that is print-friendly.
-- Overlay with Close (`✖`), Print (`🖨`), and Download CSV (`⬇`) buttons.
+- Native Ultra look and feel — table uses Blackboard Ultra's own MUI CSS classes (`MuiTable-root`, `MuiTableCell-root`, etc.) so styling automatically matches the page theme, including institution color overrides via `--bb-theme-primary-color`.
+- Responsive overlay with a branded header bar, horizontal table scrolling, sticky column headers, and row hover highlights.
+- Overlay buttons: Close (`✖`), Print (`🖨`), and Download CSV (`⬇`).
 - CSV export includes all columns except Avatar; UTF-8 BOM ensures correct encoding in Excel.
+- Collapses to full-screen on narrow viewports.
 - Fully dynamic, works on any course roster page.
 
 ---
@@ -58,10 +60,16 @@ This bookmarklet allows instructors to generate a full course roster directly fr
 - **Pronunciation Field**:
   - Displays the text value if present.
   - Adds 🔊 icon if audio exists.
-- **Responsive Table**:
-  - Horizontal scrolling on small screens.
-  - Print media query for optimized landscape printing.
-  - Min-width ensures table columns do not collapse.
+- **Native Ultra Styling**:
+  - Uses Blackboard Ultra's own MUI table classes so the overlay inherits the page's live theme, including any institution-level color customizations.
+  - Header bar uses the `--bb-theme-primary-color` CSS custom property as its background.
+  - Sticky `<thead>` keeps column headers visible while scrolling large rosters.
+  - Row hover highlight matches MUI's standard interaction pattern.
+- **Responsive Layout**:
+  - Overlay floats with a 12px inset and rounded corners on desktop.
+  - Collapses to full-screen (no inset, no border-radius) on viewports ≤ 768px.
+  - Horizontal table scrolling when columns exceed viewport width.
+  - Print media query renders in landscape with the primary-color header preserved.
 
 ---
 
