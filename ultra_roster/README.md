@@ -21,7 +21,8 @@ This bookmarklet allows instructors to generate a full course roster directly fr
   - Last Login
   - Last Access
 - Responsive table that is print-friendly.
-- Overlay with Close (`✖`) and Print (`🖨`) buttons.
+- Overlay with Close (`✖`), Print (`🖨`), and Download CSV (`⬇`) buttons.
+- CSV export includes all columns except Avatar; UTF-8 BOM ensures correct encoding in Excel.
 - Fully dynamic, works on any course roster page.
 
 ---
@@ -40,7 +41,7 @@ This bookmarklet allows instructors to generate a full course roster directly fr
 1. Navigate to any Blackboard Ultra course roster page (URL contains `/outline/roster`).
 2. Click the bookmarklet.
 3. A popup overlay will appear with a responsive roster table.
-4. Use the **Close** button to dismiss or **Print** to open a print-friendly view.
+4. Use the **Close** button to dismiss, **Print** to open a print-friendly view, or **Download CSV** to save the roster as a `.csv` file named `{courseId}_roster.csv`.
 
 ---
 

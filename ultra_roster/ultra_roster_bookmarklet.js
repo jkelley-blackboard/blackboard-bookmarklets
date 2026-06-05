@@ -22,8 +22,10 @@
         const usersResp = await fetch(`${location.origin}/learn/api/public/v1/courses/${courseId}/users?expand=user`);
         const usersJson = await usersResp.json();
 
-        // Build table rows
+        // Build table rows and parallel CSV data
         let rowsHtml = '';
+        const csvRows = [['Name','Username','Email','Student ID','Other/Preferred Name','Pronouns','Pronunciation','Role','Availability','Last Login','Last Accessed']];
+
         usersJson.results.forEach(item => {
             const u = item.user || {};
 
@@ -38,19 +40,28 @@
             let pron = u.pronunciation || '';
             if (u.pronunciationAudio?.viewUrl) pron += (pron ? ' ' : '') + '🔊';
 
+            const fullName = `${u.name?.given || ''} ${u.name?.family || ''}`.trim();
+            const email = u.contact?.email || u.contact?.institutionEmail || '';
+            const role = roleMap[item.courseRoleId] || item.courseRoleId || '';
+            const availability = item.availability?.available || '';
+            const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '';
+            const lastAccessed = item.lastAccessed ? new Date(item.lastAccessed).toLocaleString() : '';
+
+            csvRows.push([fullName, u.userName || '', email, u.studentId || '', otherName, u.pronouns || '', pron, role, availability, lastLogin, lastAccessed]);
+
             rowsHtml += `<tr>
                 <td><img src="${u.avatar?.viewUrl || 'https://static.bbcdn.io/images/avatars/default.svg'}" alt=""></td>
-                <td>${u.name?.given || ''} ${u.name?.family || ''}</td>
+                <td>${fullName}</td>
                 <td>${u.userName || ''}</td>
-                <td>${u.contact?.email || u.contact?.institutionEmail || ''}</td>
+                <td>${email}</td>
                 <td>${u.studentId || ''}</td>
                 <td>${otherName}</td>
                 <td>${u.pronouns || ''}</td>
                 <td>${pron}</td>
-                <td>${roleMap[item.courseRoleId] || item.courseRoleId || ''}</td>
-                <td>${item.availability?.available || ''}</td>
-                <td>${u.lastLogin ? new Date(u.lastLogin).toLocaleString() : ''}</td>
-                <td>${item.lastAccessed ? new Date(item.lastAccessed).toLocaleString() : ''}</td>
+                <td>${role}</td>
+                <td>${availability}</td>
+                <td>${lastLogin}</td>
+                <td>${lastAccessed}</td>
             </tr>`;
         });
 
@@ -85,7 +96,7 @@
                     word-break: break-word;
                 }
                 #bbRosterOverlay th { background: #f0f0f0; }
-                #bbRosterClose, #bbRosterPrint {
+                #bbRosterClose, #bbRosterPrint, #bbRosterCsv {
                     float: right;
                     cursor: pointer;
                     background: #333;
@@ -95,13 +106,14 @@
                     border-radius: 5px;
                     margin-left: 4px;
                 }
+                #bbRosterCsv { background: #1a6b35; }
                 #bbRosterOverlay img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
                 @media print {
                     @page { size: landscape; margin: 10mm; }
                     body * { visibility: hidden; }
                     #bbRosterOverlay, #bbRosterOverlay * { visibility: visible; }
                     #bbRosterOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; box-shadow: none; }
-                    #bbRosterClose, #bbRosterPrint { display: none; }
+                    #bbRosterClose, #bbRosterPrint, #bbRosterCsv { display: none; }
                     tr { page-break-inside: avoid; }
                     th, td { font-size: 9pt; padding: 2px 4px; }
                     img { width: 20px; height: 20px; }
@@ -110,6 +122,7 @@
             <div id="bbRosterOverlay">
                 <button id="bbRosterClose">✖ Close</button>
                 <button id="bbRosterPrint">🖨 Print</button>
+                <button id="bbRosterCsv">⬇ Download CSV</button>
                 <h2>📋 Course Roster for ${courseTitle}</h2>
                 <p>${usersJson.results.length} enrolled users</p>
                 <div class="table-container">
@@ -126,7 +139,7 @@
                             <th>Role</th>
                             <th>Availability</th>
                             <th>Last Login</th>
-                            <th>Last Access</th>
+                            <th>Last Accessed</th>
                         </tr>
                         ${rowsHtml}
                     </table>
@@ -136,13 +149,26 @@
 
         document.body.appendChild(overlay);
 
-        // Close and print buttons
         document.getElementById('bbRosterClose').onclick = () => overlay.remove();
+
         document.getElementById('bbRosterPrint').onclick = () => {
             const w = window.open();
             w.document.write(overlay.innerHTML);
             w.document.close();
             w.print();
+        };
+
+        document.getElementById('bbRosterCsv').onclick = () => {
+            const csv = csvRows
+                .map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+                .join('\r\n');
+            const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${courseJson.courseId}_roster.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
         };
 
     } catch (e) {
