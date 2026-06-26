@@ -20,6 +20,13 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
   // ── Page Guard ────────────────────────────────────────────────────────────
   const courseMatch = location.pathname.match(/courses\/(_\d+_\d+)/);
   if (!courseMatch) {
@@ -48,7 +55,7 @@
 
     // ── Build Table Rows ──────────────────────────────────────────────────
     let rowsHtml = '';
-    const csvRows = [['Name', 'Username', 'Email', 'Student ID', 'Other/Preferred Name', 'Pronouns', 'Pronunciation', 'Role', 'Availability', 'Enrollment Date', 'Last Login', 'Last Accessed']];
+    const csvRows = [['Name', 'Username', 'Email', 'Student ID', 'Other Name', 'Pronouns', 'Pronunciation', 'Role', 'Availability', 'Enrollment Date', 'Last Login', 'Last Accessed']];
 
     usersJson.results.forEach(item => {
       const u = item.user || {};
@@ -66,23 +73,23 @@
       const email       = u.contact?.email || u.contact?.institutionEmail || '';
       const role           = roleMap[item.courseRoleId] || item.courseRoleId || '';
       const availability   = item.availability?.available || '';
-      const enrollmentDate = item.created ? new Date(item.created).toLocaleString() : '';
-      const lastLogin      = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '';
-      const lastAccessed   = item.lastAccessed ? new Date(item.lastAccessed).toLocaleString() : '';
+      const enrollmentDate = fmtDate(item.created);
+      const lastLogin      = fmtDate(u.lastLogin);
+      const lastAccessed   = fmtDate(item.lastAccessed);
       const avatarSrc   = u.avatar?.viewUrl || 'https://static.bbcdn.io/images/avatars/default.svg';
 
       csvRows.push([fullName, u.userName || '', email, u.studentId || '', otherName, u.pronouns || '', pron, role, availability, enrollmentDate, lastLogin, lastAccessed]);
 
       rowsHtml += `
         <tr class="MuiTableRow-root">
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-s0" style="padding:6px 10px">
             <div class="MuiAvatar-root MuiAvatar-circular" style="width:32px;height:32px">
               <img class="MuiAvatar-img" src="${esc(avatarSrc)}" alt="${esc(fullName)}">
             </div>
           </td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(fullName)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(u.userName || '')}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(email)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-s1 bb-trunc" title="${esc(fullName)}">${esc(fullName)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-trunc" title="${esc(u.userName || '')}">${esc(u.userName || '')}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-trunc" title="${esc(email)}">${esc(email)}</td>
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(u.studentId || '')}</td>
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(otherName)}</td>
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(u.pronouns || '')}</td>
@@ -113,6 +120,11 @@
         #bbRosterContent {flex:1;overflow:auto}
         #bbRosterRoot thead th.MuiTableCell-head {position:sticky;top:0;z-index:1;background:#f5f5f5}
         #bbRosterRoot .MuiTableRow-root:hover .MuiTableCell-body {background-color:rgba(0,0,0,0.04)}
+        #bbRosterRoot .bb-trunc {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+        #bbRosterRoot td.bb-s0,#bbRosterRoot th.bb-s0 {position:sticky;left:0;z-index:1;background:#fff}
+        #bbRosterRoot td.bb-s1,#bbRosterRoot th.bb-s1 {position:sticky;left:52px;z-index:1;background:#fff;box-shadow:2px 0 5px -2px rgba(0,0,0,.15)}
+        #bbRosterRoot thead th.bb-s0,#bbRosterRoot thead th.bb-s1 {background:#f5f5f5;z-index:3}
+        #bbRosterRoot .MuiTableRow-root:hover td.bb-s0.MuiTableCell-body,#bbRosterRoot .MuiTableRow-root:hover td.bb-s1.MuiTableCell-body {background:#f6f6f6}
         @media (max-width:768px) {#bbRosterRoot {inset:0;border-radius:0}}
         @media print {@page {size:landscape;margin:10mm} body * {visibility:hidden} #bbRosterRoot,#bbRosterRoot * {visibility:visible} #bbRosterRoot {position:absolute;inset:0;box-shadow:none;border-radius:0} #bbRosterHeader {-webkit-print-color-adjust:exact;print-color-adjust:exact} #bbRosterHeaderBtns {display:none} #bbRosterRoot thead th {position:static} tr {page-break-inside:avoid}}
       </style>
@@ -132,12 +144,12 @@
           <table class="MuiTable-root" role="grid">
             <thead class="MuiTableHead-root">
               <tr class="MuiTableRow-root MuiTableRow-head">
-                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium"></th>
-                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Name</th>
+                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium bb-s0"></th>
+                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium bb-s1">Name</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Username</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Email</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Student ID</th>
-                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Other / Preferred Name</th>
+                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Other Name</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Pronouns</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Pronunciation</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Role</th>
