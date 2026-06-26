@@ -48,7 +48,7 @@
 
     // ── Build Table Rows ──────────────────────────────────────────────────
     let rowsHtml = '';
-    const csvRows = [['Name', 'Username', 'Email', 'Student ID', 'Other/Preferred Name', 'Pronouns', 'Pronunciation', 'Role', 'Availability', 'Last Login', 'Last Accessed']];
+    const csvRows = [['Name', 'Username', 'Email', 'Student ID', 'Other/Preferred Name', 'Pronouns', 'Pronunciation', 'Role', 'Availability', 'Enrollment Date', 'Last Login', 'Last Accessed']];
 
     usersJson.results.forEach(item => {
       const u = item.user || {};
@@ -64,13 +64,14 @@
 
       const fullName    = `${u.name?.given || ''} ${u.name?.family || ''}`.trim();
       const email       = u.contact?.email || u.contact?.institutionEmail || '';
-      const role        = roleMap[item.courseRoleId] || item.courseRoleId || '';
-      const availability = item.availability?.available || '';
-      const lastLogin   = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '';
-      const lastAccessed = item.lastAccessed ? new Date(item.lastAccessed).toLocaleString() : '';
+      const role           = roleMap[item.courseRoleId] || item.courseRoleId || '';
+      const availability   = item.availability?.available || '';
+      const enrollmentDate = item.created ? new Date(item.created).toLocaleString() : '';
+      const lastLogin      = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '';
+      const lastAccessed   = item.lastAccessed ? new Date(item.lastAccessed).toLocaleString() : '';
       const avatarSrc   = u.avatar?.viewUrl || 'https://static.bbcdn.io/images/avatars/default.svg';
 
-      csvRows.push([fullName, u.userName || '', email, u.studentId || '', otherName, u.pronouns || '', pron, role, availability, lastLogin, lastAccessed]);
+      csvRows.push([fullName, u.userName || '', email, u.studentId || '', otherName, u.pronouns || '', pron, role, availability, enrollmentDate, lastLogin, lastAccessed]);
 
       rowsHtml += `
         <tr class="MuiTableRow-root">
@@ -88,6 +89,7 @@
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(pron)}</td>
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(role)}</td>
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(availability)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(enrollmentDate)}</td>
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(lastLogin)}</td>
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(lastAccessed)}</td>
         </tr>`;
@@ -140,6 +142,7 @@
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Pronunciation</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Role</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Availability</th>
+                <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Enrollment Date</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Last Login</th>
                 <th class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium">Last Accessed</th>
               </tr>
