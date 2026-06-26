@@ -18,6 +18,7 @@ Generates a full, print-ready course roster overlay for any Blackboard LMS Ultra
   - Pronunciation (text + 🔊 icon if audio exists)
   - Role (mapped to friendly `nameForCourses` label)
   - Availability
+  - Enrollment Date
   - Last Login
   - Last Accessed
 - Native Ultra look and feel — uses Blackboard LMS's own MUI CSS classes (`MuiTable-root`, `MuiTableCell-root`, `MuiAvatar-root`, etc.) so the table inherits the page's live theme, including institution color overrides via `--bb-theme-primary-color`.
@@ -67,7 +68,7 @@ ultra_roster/
 ## Development / Implementation Notes
 
 - **Async IIFE**: Uses `(async function () { 'use strict'; })()` instead of the standard sync IIFE because the bookmarklet makes multiple `await fetch()` calls.
-- **Concurrent fetches**: All three API calls (`/courses/{id}`, `/courseRoles`, `/courses/{id}/users`) are issued in parallel via `Promise.all()`.
+- **Concurrent fetches**: All three API calls (`/courses/{id}`, `/courseRoles`, `/courses/{id}/users`) are issued in parallel via `Promise.all()`. Enrollment date is read from `item.created` on the enrollment record — no additional fetch required.
 - **HTML sanitization**: All API-sourced values are passed through `esc()` before insertion into `innerHTML` to prevent XSS.
 - **Native MUI styling**: Rather than duplicating Blackboard LMS's CSS, the overlay uses stable MUI class names (`MuiTable-root`, `MuiTableHead-root`, `MuiTableBody-root`, `MuiTableRow-root`, `MuiTableCell-root MuiTableCell-head/body MuiTableCell-sizeMedium`, `MuiAvatar-root MuiAvatar-circular`) that are already loaded on every Ultra page. Sticky headers and row hover are added via a minimal scoped `<style>` block.
 - **Theme color**: The header bar uses `var(--bb-theme-primary-color, #1d3557)`, which automatically picks up any institution-level color theme configured in Blackboard LMS.
