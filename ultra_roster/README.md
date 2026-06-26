@@ -13,7 +13,7 @@ Generates a full, print-ready course roster overlay for any Blackboard LMS Ultra
   - Username
   - Email
   - Student ID
-  - Other/Preferred Name (with ✨ icon if preferred, ➕ if both names shown)
+  - Other Name (with ✨ icon if preferred, ➕ if both names shown)
   - Pronouns
   - Pronunciation (text + 🔊 icon if audio exists)
   - Role (mapped to friendly `nameForCourses` label)
@@ -23,6 +23,9 @@ Generates a full, print-ready course roster overlay for any Blackboard LMS Ultra
   - Last Accessed
 - Native Ultra look and feel — uses Blackboard LMS's own MUI CSS classes (`MuiTable-root`, `MuiTableCell-root`, `MuiAvatar-root`, etc.) so the table inherits the page's live theme, including institution color overrides via `--bb-theme-primary-color`.
 - Branded header bar with sticky column headers and row hover highlights.
+- Avatar and Name columns are sticky — they remain visible when scrolling right through the full column set.
+- Long text cells (Name, Username, Email) truncate with ellipsis; hover the cell to see the full value.
+- Date fields (Enrollment Date, Last Login, Last Accessed) use `yyyymmdd-hh:mm` format so sorting alphabetically in Excel produces chronological order.
 - Overlay buttons: Close (`✖`), Print (`🖨`), Download CSV (`⬇`).
 - CSV export includes all columns except Avatar; UTF-8 BOM ensures correct encoding in Excel.
 - Collapses to full-screen on narrow viewports (≤ 768px).
@@ -70,7 +73,9 @@ ultra_roster/
 - **Async IIFE**: Uses `(async function () { 'use strict'; })()` instead of the standard sync IIFE because the bookmarklet makes multiple `await fetch()` calls.
 - **Concurrent fetches**: All three API calls (`/courses/{id}`, `/courseRoles`, `/courses/{id}/users`) are issued in parallel via `Promise.all()`. Enrollment date is read from `item.created` on the enrollment record — no additional fetch required.
 - **HTML sanitization**: All API-sourced values are passed through `esc()` before insertion into `innerHTML` to prevent XSS.
-- **Native MUI styling**: Rather than duplicating Blackboard LMS's CSS, the overlay uses stable MUI class names (`MuiTable-root`, `MuiTableHead-root`, `MuiTableBody-root`, `MuiTableRow-root`, `MuiTableCell-root MuiTableCell-head/body MuiTableCell-sizeMedium`, `MuiAvatar-root MuiAvatar-circular`) that are already loaded on every Ultra page. Sticky headers and row hover are added via a minimal scoped `<style>` block.
+- **Native MUI styling**: Rather than duplicating Blackboard LMS's CSS, the overlay uses stable MUI class names (`MuiTable-root`, `MuiTableHead-root`, `MuiTableBody-root`, `MuiTableRow-root`, `MuiTableCell-root MuiTableCell-head/body MuiTableCell-sizeMedium`, `MuiAvatar-root MuiAvatar-circular`) that are already loaded on every Ultra page. Sticky headers, row hover, truncation, and frozen columns are added via a minimal scoped `<style>` block using utility classes (`bb-s0`, `bb-s1`, `bb-trunc`).
+- **Frozen columns**: Avatar (`bb-s0`, `left:0`) and Name (`bb-s1`, `left:52px`) use `position:sticky` so they remain anchored during horizontal scroll. A subtle `box-shadow` on the Name column marks the freeze boundary. Corner header cells are promoted to `z-index:3` to sit above both the sticky top headers and the sticky left columns.
+- **Sortable dates**: A `fmtDate()` helper formats ISO timestamps as `yyyymmdd-hh:mm` (local time) so the column sorts correctly as plain text in Excel without needing date parsing.
 - **Theme color**: The header bar uses `var(--bb-theme-primary-color, #1d3557)`, which automatically picks up any institution-level color theme configured in Blackboard LMS.
 - **CSV encoding**: Output is prefixed with a UTF-8 BOM (`﻿`) so Excel auto-detects encoding for names with accents, emoji, or non-ASCII characters.
 - **CSS rules**: Each CSS rule is kept on a single line in the source to simplify minification.
