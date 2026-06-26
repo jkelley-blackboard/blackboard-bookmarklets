@@ -128,7 +128,6 @@
         #bbRosterRoot thead th.bb-s0,#bbRosterRoot thead th.bb-s1 {background:#f5f5f5;z-index:3}
         #bbRosterRoot .MuiTableRow-root:hover td.bb-s0.MuiTableCell-body,#bbRosterRoot .MuiTableRow-root:hover td.bb-s1.MuiTableCell-body {background:#f6f6f6}
         @media (max-width:768px) {#bbRosterRoot {inset:0;border-radius:0}}
-        @media print {@page {size:landscape;margin:10mm} body * {visibility:hidden} #bbRosterRoot,#bbRosterRoot * {visibility:visible} #bbRosterRoot {position:absolute;inset:0;box-shadow:none;border-radius:0} #bbRosterHeader {-webkit-print-color-adjust:exact;print-color-adjust:exact} #bbRosterHeaderBtns {display:none} #bbRosterRoot thead th {position:static} tr {page-break-inside:avoid}}
       </style>
       <div id="bbRosterHeader">
         <div id="bbRosterHeaderTitle">
@@ -137,7 +136,6 @@
         </div>
         <div id="bbRosterHeaderBtns">
           <button id="bbRosterCsv">⬇ CSV</button>
-          <button id="bbRosterPrint">🖨 Print</button>
           <button id="bbRosterClose">✖ Close</button>
         </div>
       </div>
@@ -173,13 +171,6 @@
 
     // ── Event Handlers ────────────────────────────────────────────────────
     document.getElementById('bbRosterClose').onclick = () => overlay.remove();
-
-    document.getElementById('bbRosterPrint').onclick = () => {
-      const w = window.open();
-      w.document.write(overlay.innerHTML);
-      w.document.close();
-      w.print();
-    };
 
     document.getElementById('bbRosterCsv').onclick = () => {
       const csv = csvRows
