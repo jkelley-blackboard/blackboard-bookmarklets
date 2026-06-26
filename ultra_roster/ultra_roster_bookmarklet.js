@@ -120,6 +120,8 @@
         #bbRosterContent {flex:1;overflow:auto}
         #bbRosterRoot thead th.MuiTableCell-head {position:sticky;top:0;z-index:1;background:#f5f5f5}
         #bbRosterRoot .MuiTableRow-root:hover .MuiTableCell-body {background-color:rgba(0,0,0,0.04)}
+        #bbRosterRoot .MuiTable-root {font-size:0.8rem}
+        #bbRosterRoot td.MuiTableCell-body,#bbRosterRoot th.MuiTableCell-head {padding:10px 16px}
         #bbRosterRoot .bb-trunc {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
         #bbRosterRoot td.bb-s0,#bbRosterRoot th.bb-s0 {position:sticky;left:0;z-index:1;background:#fff}
         #bbRosterRoot td.bb-s1,#bbRosterRoot th.bb-s1 {position:sticky;left:52px;z-index:1;background:#fff;box-shadow:2px 0 5px -2px rgba(0,0,0,.15)}
