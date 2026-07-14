@@ -55,7 +55,7 @@
   },
   {
     "label": "Institutional Hierarchy Export",
-    "description": "Exports all nodes in a pipe delimited, snapshot format.",
+    "description": "Exports all nodes as a pipe-delimited snapshot or a Word-compatible outline",
     "path": "institutionalHierarchy_export/institutionalHierarchy_export_bookmarklet.min.bk.js",
     "category": "Extractors"
   },
