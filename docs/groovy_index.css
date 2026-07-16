@@ -361,6 +361,7 @@ footer {
   padding: 1.2rem 2rem; text-align: center;
   font-size: 0.78rem; color: var(--text-muted); margin-top: auto;
 }
+footer p + p { margin-top: 0.35rem; }
 
 /* ── General links ────────────────────────────────────────────────────────── */
 a { color: var(--bb-green); text-decoration: none; transition: color var(--transition); }

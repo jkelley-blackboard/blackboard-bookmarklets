@@ -51,7 +51,8 @@
   </div>
 
   <footer>
-    © <span id="footer-year"></span> Blackboard Inc. All rights reserved.
+    <p>Provided by Jeff Kelley. Not an official Blackboard product — not supported or warranted by Blackboard.</p>
+    <p>This software is provided as-is, without warranty or support of any kind. Blackboard retains all rights. Use at your own risk.</p>
   </footer>
 
   <!-- Copy-success toast -->
@@ -74,9 +75,6 @@
     const repoName = "blackboard-bookmarklets";
     const branch   = "main";
     const jsonPath = "bookmarklets.json";
-
-    // ── Dynamic footer year ───────────────────────────────────────────────────
-    document.getElementById("footer-year").textContent = new Date().getFullYear();
 
     // ── Helpers ───────────────────────────────────────────────────────────────
     function cleanPath(path) {
