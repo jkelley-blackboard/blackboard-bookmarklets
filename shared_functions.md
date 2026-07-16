@@ -14,7 +14,7 @@ All functions are designed to avoid namespace collisions and external dependenci
 
 * `s` *(string)* — The string to escape.
 
-**Returns:** Escaped string with `&`, `<`, and `>` converted to their HTML entities.
+**Returns:** Escaped string with `&`, `<`, `>`, and `"` converted to their HTML entities.
 
 **Example usage:**
 
@@ -28,7 +28,7 @@ Use when inserting arbitrary text into the DOM to prevent malformed HTML or cros
 **Code:**
 
 ```js
-const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&', '<': '<', '>': '>' }[c]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 ```
 
 ---

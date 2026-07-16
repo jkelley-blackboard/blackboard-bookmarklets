@@ -3,6 +3,10 @@
 This repo is a collection of JavaScript bookmarklets for **Blackboard LMS** (Ultra/SaaS) administrators.
 Live docs page: https://jkelley-blackboard.github.io/blackboard-bookmarklets
 
+Related reference docs, loaded automatically as part of this context:
+@SHARED_FUNCTIONS.md
+@BOOKMARKLET_GUIDE.md
+
 ---
 
 ## Naming — STRICT RULES
@@ -61,21 +65,9 @@ if (!document.querySelector('.some-bb-selector')) {
 }
 ```
 
-**Sanitize before innerHTML**:
-```javascript
-function esc(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-```
+**Sanitize before innerHTML** and **floating panel**: use the canonical `esc()` / `ensurePanel()` / `addBtn()` helpers in [SHARED_FUNCTIONS.md](SHARED_FUNCTIONS.md) — don't hand-roll a new version of either.
 
-**Floating panel**:
-```javascript
-const panel = document.createElement('div');
-panel.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:#fff;border:1px solid #ccc;border-radius:6px;padding:16px;font-family:sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);';
-document.body.appendChild(panel);
-```
+**Admin-frame pages** (Original-experience admin pages run in an iframe inside the Ultra UI): use `getAdminFrameDocument()` / `isCorrectPage()` / `isShowAll()` from [SHARED_FUNCTIONS.md](SHARED_FUNCTIONS.md).
 
 **Download**:
 ```javascript
