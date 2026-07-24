@@ -31,22 +31,14 @@ When you run the bookmarklet, a prompt lets you choose the export format:
 > 2 = JSON (raw REST response)
 > 3 = RTF outline for Word (.rtf)
 
-Entering anything other than `1`, `2`, or `3` (or cancelling the prompt) aborts the export with no file downloaded.
+Entering anything other than `1`, `2`, or `3` (or cancelling the prompt) aborts the export with no file downloaded. There is no further prompt after this — the export runs immediately.
 
 ### Pipe-delimited snapshot (.txt)
 
-The downloaded file is **pipe-delimited** (no quotes).
-
-#### Standard output (default)
+The downloaded file (`ih-children-_1_1-<hostname>-<date>.txt`) is **pipe-delimited** (no quotes):
 
 ```
 parent_node_key|external_node_key|name|description
-```
-
-#### With node_id column (optional — see below)
-
-```
-parent_node_key|external_node_key|name|description|node_id
 ```
 
 **Column descriptions:**
@@ -57,49 +49,40 @@ parent_node_key|external_node_key|name|description|node_id
 | `external_node_key` | Child node's `externalId` |
 | `name` | Child node's `title` |
 | `description` | Child node's `description` |
-| `node_id` | Child node's internal PK ID in `_nnn_1` format (optional — see below) |
 
 ### JSON (.json)
 
-Produces `ih-children-_1_1.json` — the flat array of node objects exactly as returned by the REST API's combined `results` pages, with no restructuring or field filtering. Useful if you want to script further processing (e.g. build your own tree, filter by attribute) without re-fetching. The `node_id` prompt does not apply to this format — the REST `id` field is already present in every object.
+Produces `ih-children-_1_1-<hostname>-<date>.json` — the flat array of node objects exactly as returned by the REST API's combined `results` pages, with no restructuring or field filtering. Useful if you want to script further processing (e.g. build your own tree, filter by attribute) without re-fetching. Every object includes the REST `id` field (`_nnn_1` format) as-is.
 
 ### Word-compatible outline (.rtf)
 
-Instead of a flat file, this produces `ih-outline-_1_1.rtf` — a Rich Text Format document that opens directly in Microsoft Word (or Word Online/LibreOffice Writer). Each node is written as a heading-level paragraph matching its depth in the hierarchy (Heading 1 for top-level nodes, Heading 2 for their children, and so on), so:
+Instead of a flat file, this produces `ih-outline-_1_1-<hostname>-<date>.rtf` — a Rich Text Format document that opens directly in Microsoft Word (or Word Online/LibreOffice Writer). Each node is written as a heading-level paragraph matching its depth in the hierarchy (Heading 1 for top-level nodes, Heading 2 for their children, and so on), so:
 
 - **View → Outline** in Word shows the full hierarchy and lets you promote, demote, and collapse/expand branches.
 - Node descriptions (if present) appear as italicized body text nested under their node.
-- If you opted in to `node_id`, it's appended after each node's name, e.g. `College of Engineering [_312_1]`.
 
-Hierarchies deeper than 9 levels are capped at Heading 9 for the deepest nodes (Word supports outline levels 0–8 / Heading 1–9).
+Hierarchies deeper than 9 levels are capped at Heading 9 for the deepest nodes (Word supports outline levels 0–8 / Heading 1–9). The RTF output does not currently include the node's internal id — see **Pending spec** below.
 
 ---
 
-## Optional: Include node_id
+## Node id (`_nnn_1`) and Ally role IDs
 
-After the format prompt — only if you chose format `1` (pipe-delimited) or `3` (RTF outline) — a confirmation dialog will appear:
+The internal node id is no longer offered as a column/toggle in the pipe-delimited or RTF outputs — if you need it, use the **JSON** format, where every node object already includes its REST `id` field (e.g. `_957_1`).
 
-> **Include node_id (_nnn_1 format)?**  
-> Useful for building ALLY_NODE_ institutional role IDs.  
-> OK = Yes, include node_id | Cancel = Standard export (no node_id)
-
-This prompt is skipped for the JSON format, since the REST `id` field is already present in every node object.
-
-The `node_id` value (e.g. `_957_1`) is the node's internal primary key as returned directly by the REST API. No additional fetch is required — it is already present in the children response. This choice adds a `node_id` column in the `.txt` export, or a `[_957_1]` suffix on each node's name in the `.rtf` outline.
-
-### Why you might want node_id
-
-Ally Departmental Reports require an Institutional Role ID per department node in the format `ALLY_NODE_957_1`, where `957` is the PK1 of the node. Including the `node_id` column gives you this value in `_957_1` format for every node in a single export, making it straightforward to construct the role IDs (e.g. in Excel using `="ALLY_NODE_" & MID(E2,2,LEN(E2)-2)`).
+Ally Departmental Reports require an Institutional Role ID per department node in the format `ALLY_NODE_957_1`, where `957` is the PK1 of the node. You can derive this from the JSON export's `id` field for each node (e.g. in a spreadsheet, after flattening the JSON: `="ALLY_NODE_" & MID(id,2,LEN(id)-2)`).
 
 See the [Blackboard Ally departmental reports documentation](https://help.anthology.com/ally-lms/en/administrators/ally-institution-report/institution-report-directory/configure-blackboard-departmental-reports.html) for context.
 
-### Sample output with node_id
+---
+
+## Filenames
+
+Every export filename includes the Blackboard site hostname and today's date, so files from different environments or runs don't collide, e.g.:
 
 ```
-parent_node_key|external_node_key|name|description|node_id
-UAF|UAF_ENGR|College of Engineering||_312_1
-UAF_ENGR|UAF_ENGR_EECS|Electrical Engineering and Computer Science (EECS)||_957_1
-UAF_ENGR|UAF_ENGR_MEEG|Mechanical Engineering (MEEG)||_958_1
+ih-children-_1_1-mysite.blackboard.com-2026-07-24.txt
+ih-children-_1_1-mysite.blackboard.com-2026-07-24.json
+ih-outline-_1_1-mysite.blackboard.com-2026-07-24.rtf
 ```
 
 ---

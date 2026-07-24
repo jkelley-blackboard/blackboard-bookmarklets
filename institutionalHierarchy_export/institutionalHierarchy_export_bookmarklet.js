@@ -3,9 +3,8 @@
  * Endpoint: GET /learn/api/public/v1/institutionalHierarchy/nodes/{nodeId}/children?recursive=true
  * Output: prompted at runtime — one of three formats:
  *         1) Pipe-delimited snapshot (.txt): parent_node_key|external_node_key|name|description
- *            Optional extra column: node_id (_nnn_1 format) — prompted at runtime
- *         2) JSON (.json): raw REST response node objects, flat array, unmodified
- *         3) Word-compatible outline (.rtf) — nested headings, node_id also optional here
+ *         2) JSON (.json): raw REST response node objects, flat array, unmodified (includes id)
+ *         3) Word-compatible outline (.rtf) — nested headings, no node_id (pending final spec)
  *
  * Auth: Relies on existing session cookies (credentials: 'include'). If your Learn site enforces OAuth for REST,
  *       calls will fail with 401/403. In that case, obtain an OAuth token first and pass it via Authorization header.
@@ -18,6 +17,9 @@
 (function(){
   const START_NODE_ID = "_1_1"; // Fixed starting nodeId per requirements
   const BASE = location.origin;
+
+  /** Filename suffix: Blackboard site hostname + today's date (YYYY-MM-DD), sanitized for use in a filename */
+  const FILE_STAMP = `${location.hostname.replace(/[^a-z0-9.-]/gi, '_')}-${new Date().toISOString().slice(0, 10)}`;
 
   /** Ask at runtime which output format to produce */
   const FORMAT_CHOICES = { '1': 'pipe', '2': 'json', '3': 'rtf' };
@@ -35,18 +37,8 @@
     return;
   }
 
-  /** Ask at runtime whether to include the node_id column/annotation (pipe + rtf only; JSON already has it) */
-  const INCLUDE_NODE_ID = (FORMAT === 'pipe' || FORMAT === 'rtf') && confirm(
-    "Include node_id (_nnn_1 format)?\n\n" +
-    "Useful for building ALLY_NODE_ institutional role IDs.\n\n" +
-    "OK = Yes, include node_id\n" +
-    "Cancel = Standard export (no node_id)"
-  );
-
-  /** Build header based on user choice (pipe format only) */
-  const HEADER = INCLUDE_NODE_ID
-    ? ["parent_node_key", "external_node_key", "name", "description", "node_id"]
-    : ["parent_node_key", "external_node_key", "name", "description"];
+  /** Pipe-delimited header (no node_id — see file header for per-format id handling) */
+  const HEADER = ["parent_node_key", "external_node_key", "name", "description"];
 
   /** Small delay to be friendly to the server */
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -100,16 +92,6 @@
   }
 
   /**
-   * Extract the _nnn_1 formatted ID from a node's id field.
-   * The REST API returns id as "_957_1" — we use it directly.
-   * @param {object} node
-   * @returns {string}
-   */
-  function getNodePkId(node){
-    return (node && node.id) ? node.id : '';
-  }
-
-  /**
    * Build pipe-delimited rows from children list, resolving parent externalId.
    * @param {Array<object>} nodes
    * @returns {Promise<string[]>} rows including header
@@ -128,10 +110,7 @@
       const name = n.title || '';
       const description = n.description || '';
 
-      const fields = [parentKey, externalKey, name, description];
-      if(INCLUDE_NODE_ID) fields.push(getNodePkId(n));
-
-      rows.push(fields.join('|'));
+      rows.push([parentKey, externalKey, name, description].join('|'));
     }
     return rows;
   }
@@ -204,8 +183,7 @@
       const level = Math.min(depth, MAX_OUTLINE_LEVEL);
       const indent = depth * 360; // twips (~0.25in per level)
       const sizeHalfPoints = Math.max(20, 32 - depth * 2); // shrink font per depth, floor at 10pt
-      let title = node.title || node.externalId || '(untitled)';
-      if(INCLUDE_NODE_ID) title += ` [${getNodePkId(node)}]`;
+      const title = node.title || node.externalId || '(untitled)';
       lines.push(`{\\pard\\outlinelevel${level}\\li${indent}\\b\\fs${sizeHalfPoints} ${rtfEscape(title)}\\b0\\fs22\\par}`);
       if(node.description){
         lines.push(`{\\pard\\outlinelevel9\\li${indent + 180}\\i\\fs20 ${rtfEscape(node.description)}\\i0\\fs22\\par}`);
@@ -242,14 +220,14 @@
         return;
       }
       if(FORMAT === 'json'){
-        downloadFile(JSON.stringify(nodes, null, 2), `ih-children-${START_NODE_ID}.json`, 'application/json');
+        downloadFile(JSON.stringify(nodes, null, 2), `ih-children-${START_NODE_ID}-${FILE_STAMP}.json`, 'application/json');
       }else if(FORMAT === 'rtf'){
         const roots = buildOutlineTree(nodes);
         const rtf = buildOutlineDocument(roots);
-        downloadFile(rtf, `ih-outline-${START_NODE_ID}.rtf`, 'application/rtf');
+        downloadFile(rtf, `ih-outline-${START_NODE_ID}-${FILE_STAMP}.rtf`, 'application/rtf');
       }else{
         const rows = await buildRows(nodes);
-        downloadFile(rows.join('\n'), `ih-children-${START_NODE_ID}.txt`, 'text/plain');
+        downloadFile(rows.join('\n'), `ih-children-${START_NODE_ID}-${FILE_STAMP}.txt`, 'text/plain');
       }
     }catch(err){
       console.error(err);
