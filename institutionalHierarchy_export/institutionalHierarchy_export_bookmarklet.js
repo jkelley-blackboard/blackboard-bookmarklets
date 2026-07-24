@@ -1,9 +1,11 @@
 /**
  * Blackboard Learn IH Children Export (Expanded JS)
  * Endpoint: GET /learn/api/public/v1/institutionalHierarchy/nodes/{nodeId}/children?recursive=true
- * Output: parent_node_key|external_node_key|name|description (pipe-delimited, no quotes)
- *         Optional extra column: node_id (_nnn_1 format) — prompted at runtime
- *         Alternate format: Word-compatible outline (.rtf) — prompted at runtime
+ * Output: prompted at runtime — one of three formats:
+ *         1) Pipe-delimited snapshot (.txt): parent_node_key|external_node_key|name|description
+ *            Optional extra column: node_id (_nnn_1 format) — prompted at runtime
+ *         2) JSON (.json): raw REST response node objects, flat array, unmodified
+ *         3) Word-compatible outline (.rtf) — nested headings, node_id also optional here
  *
  * Auth: Relies on existing session cookies (credentials: 'include'). If your Learn site enforces OAuth for REST,
  *       calls will fail with 401/403. In that case, obtain an OAuth token first and pass it via Authorization header.
@@ -17,22 +19,31 @@
   const START_NODE_ID = "_1_1"; // Fixed starting nodeId per requirements
   const BASE = location.origin;
 
-  /** Ask at runtime whether to include the node_id column/annotation */
-  const INCLUDE_NODE_ID = confirm(
+  /** Ask at runtime which output format to produce */
+  const FORMAT_CHOICES = { '1': 'pipe', '2': 'json', '3': 'rtf' };
+  const formatInput = prompt(
+    "Choose export format:\n\n" +
+    "1 = Pipe-delimited snapshot (.txt)\n" +
+    "2 = JSON (raw REST response)\n" +
+    "3 = RTF outline for Word (.rtf)",
+    "1"
+  );
+  if (formatInput === null) return; // User cancelled the prompt
+  const FORMAT = FORMAT_CHOICES[formatInput.trim()];
+  if (!FORMAT) {
+    alert(`Invalid selection: "${formatInput}". Please enter 1, 2, or 3.`);
+    return;
+  }
+
+  /** Ask at runtime whether to include the node_id column/annotation (pipe + rtf only; JSON already has it) */
+  const INCLUDE_NODE_ID = (FORMAT === 'pipe' || FORMAT === 'rtf') && confirm(
     "Include node_id (_nnn_1 format)?\n\n" +
     "Useful for building ALLY_NODE_ institutional role IDs.\n\n" +
     "OK = Yes, include node_id\n" +
     "Cancel = Standard export (no node_id)"
   );
 
-  /** Ask at runtime which output format to produce */
-  const USE_OUTLINE_FORMAT = confirm(
-    "Export format?\n\n" +
-    "OK = Word-compatible outline (.rtf) — nested headings you can open, promote/demote, and print in Microsoft Word\n" +
-    "Cancel = Pipe-delimited snapshot (.txt)"
-  );
-
-  /** Build header based on user choice (text format only) */
+  /** Build header based on user choice (pipe format only) */
   const HEADER = INCLUDE_NODE_ID
     ? ["parent_node_key", "external_node_key", "name", "description", "node_id"]
     : ["parent_node_key", "external_node_key", "name", "description"];
@@ -230,7 +241,9 @@
         alert('No descendants returned (or auth blocked).');
         return;
       }
-      if(USE_OUTLINE_FORMAT){
+      if(FORMAT === 'json'){
+        downloadFile(JSON.stringify(nodes, null, 2), `ih-children-${START_NODE_ID}.json`, 'application/json');
+      }else if(FORMAT === 'rtf'){
         const roots = buildOutlineTree(nodes);
         const rtf = buildOutlineDocument(roots);
         downloadFile(rtf, `ih-outline-${START_NODE_ID}.rtf`, 'application/rtf');

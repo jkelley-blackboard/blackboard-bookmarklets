@@ -8,7 +8,7 @@ GET /learn/api/public/v1/institutionalHierarchy/nodes/{nodeId}/children?recursiv
 
 This repository provides:
 
-- A **one-line bookmarklet** you can save in your browser to download a pipe-delimited text file.
+- A **one-line bookmarklet** you can save in your browser to download a pipe-delimited text file, a raw JSON export, or a Word-compatible RTF outline.
 - An **expanded JavaScript file** you can run in the browser console or adapt as needed.
 
 ---
@@ -24,11 +24,14 @@ This repository provides:
 
 ## Output Formats
 
-When you run the bookmarklet, a confirmation dialog lets you choose the export format:
+When you run the bookmarklet, a prompt lets you choose the export format:
 
-> **Export format?**
-> OK = Word-compatible outline (.rtf) — nested headings you can open, promote/demote, and print in Microsoft Word
-> Cancel = Pipe-delimited snapshot (.txt)
+> **Choose export format:**
+> 1 = Pipe-delimited snapshot (.txt)
+> 2 = JSON (raw REST response)
+> 3 = RTF outline for Word (.rtf)
+
+Entering anything other than `1`, `2`, or `3` (or cancelling the prompt) aborts the export with no file downloaded.
 
 ### Pipe-delimited snapshot (.txt)
 
@@ -56,6 +59,10 @@ parent_node_key|external_node_key|name|description|node_id
 | `description` | Child node's `description` |
 | `node_id` | Child node's internal PK ID in `_nnn_1` format (optional — see below) |
 
+### JSON (.json)
+
+Produces `ih-children-_1_1.json` — the flat array of node objects exactly as returned by the REST API's combined `results` pages, with no restructuring or field filtering. Useful if you want to script further processing (e.g. build your own tree, filter by attribute) without re-fetching. The `node_id` prompt does not apply to this format — the REST `id` field is already present in every object.
+
 ### Word-compatible outline (.rtf)
 
 Instead of a flat file, this produces `ih-outline-_1_1.rtf` — a Rich Text Format document that opens directly in Microsoft Word (or Word Online/LibreOffice Writer). Each node is written as a heading-level paragraph matching its depth in the hierarchy (Heading 1 for top-level nodes, Heading 2 for their children, and so on), so:
@@ -70,13 +77,15 @@ Hierarchies deeper than 9 levels are capped at Heading 9 for the deepest nodes (
 
 ## Optional: Include node_id
 
-Before the format prompt, a confirmation dialog will appear:
+After the format prompt — only if you chose format `1` (pipe-delimited) or `3` (RTF outline) — a confirmation dialog will appear:
 
 > **Include node_id (_nnn_1 format)?**  
 > Useful for building ALLY_NODE_ institutional role IDs.  
 > OK = Yes, include node_id | Cancel = Standard export (no node_id)
 
-The `node_id` value (e.g. `_957_1`) is the node's internal primary key as returned directly by the REST API. No additional fetch is required — it is already present in the children response. This choice applies to both output formats: it adds a `node_id` column in the `.txt` export, or a `[_957_1]` suffix on each node's name in the `.rtf` outline.
+This prompt is skipped for the JSON format, since the REST `id` field is already present in every node object.
+
+The `node_id` value (e.g. `_957_1`) is the node's internal primary key as returned directly by the REST API. No additional fetch is required — it is already present in the children response. This choice adds a `node_id` column in the `.txt` export, or a `[_957_1]` suffix on each node's name in the `.rtf` outline.
 
 ### Why you might want node_id
 
@@ -101,3 +110,4 @@ UAF_ENGR|UAF_ENGR_MEEG|Mechanical Engineering (MEEG)||_958_1
 - **Large hierarchies:** The script follows `paging.nextPage` and applies a small delay (`sleep(50ms)`) to be polite. Increase the delay if you encounter throttling.
 - **Auth:** Relies on existing session cookies (`credentials: 'include'`). If your Learn site enforces OAuth for REST, calls will fail with 401/403. In that case, obtain an OAuth token first and pass it via Authorization header. See: [Basic Authentication with REST](https://blackboard.github.io/rest-apis/learn/getting-started/basic-authentication).
 - **TODO — needs more testing:** The `.rtf` outline export is new and has only been checked by hand-verifying the RTF control words/brace structure (this sandbox's LibreOffice couldn't load any RTF file to test automatically). Still needs a real open/verify pass in Microsoft Word — outline levels, promote/demote, deep hierarchies (10+ levels), and non-ASCII names/descriptions — before treating it as fully validated.
+- **Pending spec:** The RTF outline format is still awaiting a final spec from terry@terrypatterson.net; the current implementation may change once that's received.
