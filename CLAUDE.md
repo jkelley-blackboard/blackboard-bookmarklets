@@ -137,12 +137,14 @@ function getKeyFromRow(tr) {
   "label": "Bb Tool Display Name",
   "description": "Active-voice one sentence, no trailing period",
   "path": "tool_name/tool_name_bookmarklet.min.bk.js",
-  "category": "Extractors"
+  "category": "Extractors",
+  "lastUpdated": "YYYY-MM-DD"
 }
 ```
 
 **Label** always starts with `"Bb "`.
 **Category** must be one of exactly: `Role Managers` · `Enhanced Display` · `Extractors` · `Gradebook Tools` · `Other Tools`
+**lastUpdated** is a manually-maintained date (`YYYY-MM-DD`) shown on the docs site card — bump it whenever the tool's `.min.bk.js` changes.
 
 ---
 

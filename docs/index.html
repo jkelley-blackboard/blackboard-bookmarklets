@@ -85,6 +85,12 @@
       return text.replace(/\s+/g, "-").replace(/[^\w-]/g, "");
     }
 
+    function formatDate(iso) {
+      if (!iso) return null;
+      const [y, m, d] = iso.split("-").map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    }
+
     // ── Toast ─────────────────────────────────────────────────────────────────
     function showToast() {
       const toast = document.getElementById("copyToast");
@@ -219,6 +225,15 @@
                 desc.className = "bm-card-desc";
                 desc.textContent = bm.description;
                 card.appendChild(desc);
+
+                // Last-updated meta
+                const updatedText = formatDate(bm.lastUpdated);
+                if (updatedText) {
+                  const meta = document.createElement("p");
+                  meta.className = "bm-card-meta";
+                  meta.textContent = `Updated ${updatedText}`;
+                  card.appendChild(meta);
+                }
 
                 // Footer: drag button + copy button + readme button
                 const footer   = document.createElement("div");

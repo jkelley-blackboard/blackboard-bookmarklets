@@ -3,84 +3,98 @@
     "label": "Bb Role Utility",
     "description": "Executes all three functions - Display Entitlements, Role Download, and Role Compare.",
     "path": "role_privliges_utility/role_privliges_utility.min.bk.js",
-    "category": "Role Managers"
+    "category": "Role Managers",
+    "lastUpdated": "2025-09-28"
   },
   {
     "label": "Bb Display Entitlements",
     "description": "Displays entitlements for all system/courrse roles on the privileges page.",
     "path": "display_entitlements/display_entitlments_bookmarklet.min.bk.js",
-    "category": "Enhanced Display"
+    "category": "Enhanced Display",
+    "lastUpdated": "2025-09-21"
   },
   {
     "label": "Bb Role Compare",
     "description": "Compares system roles against a JSON file to highlight mismatches.",
     "path": "role_compare/blackboard_role_compare_bookmarklet.min.bm.js",
-    "category": "Role Managers"
+    "category": "Role Managers",
+    "lastUpdated": "2025-09-26"
   },
   {
     "label": "Bb Role Download",
     "description": "Downloads all system roles and their entitlements as a JSON file.",
     "path": "role_download/blackboard_role_download_bookmarklet.min.bm.js",
-    "category": "Role Managers"
+    "category": "Role Managers",
+    "lastUpdated": "2025-09-26"
   },
   {
     "label": "Bb Analytics IDs",
     "description": "Highlights Ultra page elements with Analytics IDs with click to copy to clipboard function.",
     "path": "view_analytics_ids/blackboard_analytics_id_hover_bookmarklet.min.bm.js",
-    "category": "Enhanced Display"
+    "category": "Enhanced Display",
+    "lastUpdated": "2025-10-04"
   },
   {
     "label": "Bb User Details",
     "description": "Shows additional user information on Admin > Users list.",
     "path": "user_details/user_details_bookmarklet.min.bk.js",
-    "category": "Enhanced Display"
+    "category": "Enhanced Display",
+    "lastUpdated": "2026-01-16"
   },
   {
     "label": "Bb Course Details",
     "description": "Shows additional course information on Admin > Courses list.",
     "path": "course_details/course_details_bookmarklet.min.bk.js",
-    "category": "Enhanced Display"
+    "category": "Enhanced Display",
+    "lastUpdated": "2025-10-23"
   },
   {
     "label": "Bb Course Roster",
     "description": "Generates a full course roster with avatar, pronouns, role, enrollment date, and access data — CSV-exportable",
     "path": "ultra_roster/ultra_roster_bookmarklet.min.bk.js",
-    "category": "Extractors"
+    "category": "Extractors",
+    "lastUpdated": "2026-06-26"
   },
   {
     "label": "Building Blocks Compare",
     "description": "Download B2 list and upload to compare between versions or systems.",
     "path": "b2_compare/b2_compare_bookmarklet.min.bk.js",
-    "category": "Other Tools"
+    "category": "Other Tools",
+    "lastUpdated": "2025-10-14"
   },
   {
     "label": "Institutional Hierarchy Export",
     "description": "Exports all nodes as a pipe-delimited snapshot or a Word-compatible outline",
     "path": "institutionalHierarchy_export/institutionalHierarchy_export_bookmarklet.min.bk.js",
-    "category": "Extractors"
+    "category": "Extractors",
+    "lastUpdated": "2026-07-24"
   },
   {
     "label": "User UUID Export",
     "description": "Generates a list of UUID values for input usernames.",
     "path": "uuid_lookup/uuid_lookup_bookmarklet_min.js",
-    "category": "Extractors"
+    "category": "Extractors",
+    "lastUpdated": "2026-02-20"
   },
   {
     "label": "LTI Placements Export",
     "description": "Generate, search and export a list of all LTI placements",
     "path": "lti_placements/lti_placements_bookmarklet.min.bk.js",
-    "category": "Extractors"
+    "category": "Extractors",
+    "lastUpdated": "2026-02-22"
   },
   {
     "label": "Orphaned Grades",
     "description": "Analyze Grade Items for Missing Content",
     "path": "orphan_grades/orphan_grades_bookmarklet.min.bk.js",
-    "category": "Other Tools"
+    "category": "Other Tools",
+    "lastUpdated": "2026-05-18"
   },
   {
     "label": "Bb Student Grade Print",
     "description": "Opens a print-ready view of an individual student's grades from the Blackboard gradebook side panel",
     "path": "student_grades_print/student_grades_print_bookmarklet.min.bk.js",
-    "category": "Gradebook Tools"
+    "category": "Gradebook Tools",
+    "lastUpdated": "2026-06-26"
   }
 ]
