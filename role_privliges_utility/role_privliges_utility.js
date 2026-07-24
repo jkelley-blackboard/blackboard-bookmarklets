@@ -48,6 +48,65 @@ javascript:(() => {
     String(s).replace(/[\\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
 
   /* ===========================
+     Blackboard native privileges CSV (import/export format added Dec 2025)
+     https://help.anthology.com/blackboard/administrator/en/whats-new/2025-archived-release-notes/december-2025-release-notes--4000-4-.html#import-and-export-privileges-for-system-and-course-roles
+     ============================ */
+  const toCsvField = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+
+  const buildPrivilegesCsv = (rows) => {
+    const header = ['Privileges', 'Permitted', 'Entitlement ID'].map(toCsvField).join(',');
+    const body = rows.map(r => [r.name, r.permitted ? 'true' : 'false', r.entitlement].map(toCsvField).join(','));
+    return '\uFEFF' + [header, ...body].join('\r\n') + '\r\n';
+  };
+
+  const parseCsvRows = (text) => {
+    const rows = [];
+    let i = 0, field = '', row = [], inQuotes = false;
+    const s = text.replace(/^\uFEFF/, '');
+    const n = s.length;
+    while (i < n) {
+      const c = s[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (s[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += c; i++; continue;
+      }
+      if (c === '"') { inQuotes = true; i++; continue; }
+      if (c === ',') { row.push(field); field = ''; i++; continue; }
+      if (c === '\r') { i++; continue; }
+      if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+      field += c; i++;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.length > 1 || r[0] !== '');
+  };
+
+  const parsePrivilegesCsv = (text) => {
+    const rows = parseCsvRows(text);
+    if (!rows.length) return [];
+    const looksLikeHeader = (rows[0][0] || '').toLowerCase().includes('privilege');
+    const body = looksLikeHeader ? rows.slice(1) : rows;
+    return body
+      .filter(r => r.length >= 3 && r[2])
+      .map(r => ({ name: r[0], permitted: String(r[1]).trim().toLowerCase() === 'true', entitlement: r[2] }));
+  };
+
+  // Convert a native CSV upload into the same {source, privileges} shape used by buildDownloadJson()
+  const csvToCompareData = (text, filename) => {
+    const rows = parsePrivilegesCsv(text);
+    const privileges = {};
+    rows.forEach(({ name, permitted, entitlement }) => {
+      privileges[entitlement] = { status: permitted ? 'permitted' : 'restricted', name };
+    });
+    return {
+      source: { format: 'Blackboard native CSV', file: filename || '' },
+      privileges
+    };
+  };
+
+  /* ===========================
      Page context (shown at panel top)
      ============================ */
   const getPageContext = (doc) => {
@@ -494,28 +553,60 @@ javascript:(() => {
       }
     }, 'btnDownload');
 
-    addBtn(doc, primary, 'Upload JSON (Compare)', () => {
+    addBtn(doc, primary, 'Download CSV (Blackboard Import Format)', () => {
+      try {
+        const rows = getRows(doc).map(readRow).filter(Boolean);
+        const csvRows = rows.map(({ name, status, entitlement }) => ({
+          name,
+          permitted: status === 'permitted',
+          entitlement
+        }));
+        const ctx = getPageContext(doc) || {};
+        const csv = buildPrivilegesCsv(csvRows);
+        const a = doc.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        a.download = `${safeFilename(ctx.role || 'Role')}_privileges.csv`;
+        doc.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+      } catch (e) {
+        alert('Download failed: ' + (e?.message || e));
+      }
+    }, 'btnDownloadCsv');
+
+    addBtn(doc, primary, 'Upload JSON / CSV (Compare)', () => {
       const input = doc.createElement('input');
       input.type = 'file';
-      input.accept = '.json,application/json';
+      input.accept = '.json,.csv,application/json,text/csv';
       input.onchange = (ev) => {
         const f = ev.target.files && ev.target.files[0];
         if (!f) return;
+        const isCsv = /\.csv$/i.test(f.name);
         const r = new FileReader();
         r.onload = (e) => {
           let j;
-          try {
-            j = JSON.parse(String(e.target.result || '{}'));
-          } catch (err) {
-            alert('JSON parse error: ' + (err?.message || err));
-            return;
+          const text = String(e.target.result || '');
+          if (isCsv) {
+            try {
+              j = csvToCompareData(text, f.name);
+            } catch (err) {
+              alert('CSV parse error: ' + (err?.message || err));
+              return;
+            }
+          } else {
+            try {
+              j = JSON.parse(text || '{}');
+            } catch (err) {
+              alert('JSON parse error: ' + (err?.message || err));
+              return;
+            }
           }
           if (!j || typeof j !== 'object') {
-            alert('JSON must be an object with a "privileges" map.');
+            alert(isCsv ? 'CSV could not be parsed into a privileges list.' : 'JSON must be an object with a "privileges" map.');
             return;
           }
           if (!j.privileges || typeof j.privileges !== 'object') {
-            alert('JSON missing "privileges" object.');
+            alert(isCsv ? 'No privilege rows found in CSV.' : 'JSON missing "privileges" object.');
             return;
           }
           if (!validateRoleType(doc, panel, j)) return;

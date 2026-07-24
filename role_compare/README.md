@@ -10,7 +10,7 @@
 
 # Blackboard Role Compare Bookmarklet
 
-This bookmarklet allows administrators to **compare the current Blackboard role privileges** with a previously downloaded JSON file and quickly identify mismatches.
+This bookmarklet allows administrators to **compare the current Blackboard role privileges** with a previously downloaded JSON file, or with a CSV file in Blackboard's native Manage Privileges import/export format, and quickly identify mismatches.
 
 ---
 
@@ -56,12 +56,18 @@ The bookmarklet **requires that all privileges are displayed** on one page (**Sh
 3. Navigate to the correct **Manage Privileges** page in Blackboard.
 4. Click **Show All** on the page (required).
 5. Click the bookmarklet:
-   - Use **Upload JSON** to select a previously downloaded role JSON file.
+   - Use **Upload JSON / CSV** to select a previously downloaded role JSON file, or a CSV file in Blackboard's native Manage Privileges import/export format (added in the [December 2025 release](https://help.anthology.com/blackboard/administrator/en/whats-new/2025-archived-release-notes/december-2025-release-notes--4000-4-.html#import-and-export-privileges-for-system-and-course-roles)) — the file is detected automatically by extension.
    - The floating panel will display:
-     - **SOURCE details** from the JSON
+     - **SOURCE details** from the uploaded file
      - **Filter buttons** for mismatches
      - A summary and diagnostics section
 6. Hover over ⚠ icons to see mismatch details.
+
+---
+
+## ✅ CSV Support
+
+CSV uploads use Blackboard's native 3-column format (`Privileges`, `Permitted`, `Entitlement ID`), the same file produced by Blackboard's own Manage Privileges **Export** button or by this repo's [Role Download](../role_download/) bookmarklet's **Download CSV** button. Because the native format has no "inherited" state, CSV-sourced comparisons treat any row with `Permitted=false` as **restricted**, even if the page shows it as inherited.
 
 ---
 

@@ -83,7 +83,15 @@
 
     detailsDiv.innerHTML = `<b>Role Type:</b>${roleType}<br><b>bbDeployment:</b>${bbDeployment}<br><b>Role:</b>${roleName}<br><b>Blackboard Version:</b>${bbVersion}<br><b>Timestamp:</b>${timestamp}<hr>`;
 
-    // ===== 6. Add button helper =====
+    // ===== 6. CSV helpers (Blackboard native Manage Privileges import/export format) =====
+    const toCsvField = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+    const buildPrivilegesCsv = (rows) => {
+        const header = ["Privileges", "Permitted", "Entitlement ID"].map(toCsvField).join(",");
+        const body = rows.map(r => [r.name, r.permitted ? "true" : "false", r.entitlement].map(toCsvField).join(","));
+        return "\uFEFF" + [header, ...body].join("\r\n") + "\r\n";
+    };
+
+    // ===== 7. Add button helper =====
     const addButton = (label, handler) => {
         const btn = d.createElement("button");
         btn.textContent = label;
@@ -94,21 +102,28 @@
         buttonContainer.appendChild(btn);
     };
 
-    // ===== 7. Add Download JSON button =====
-    addButton("Download JSON", () => {
+    // ===== 8. Read privilege rows (shared by both download buttons) =====
+    const readPrivilegeRows = () => {
         const rows = d.querySelectorAll("tbody#listContainer_databody>tr");
-        const privileges = {};
+        const out = [];
         rows.forEach(tr => {
             const nameEl = tr.querySelector("th div");
-            const name = nameEl ? nameEl.innerText.trim() : null;
+            const name = nameEl ? nameEl.innerText.trim().replace(/^"+|"+$/g, "") : null;
             const entitlementEl = tr.querySelector('input[type="checkbox"]');
             const entitlement = entitlementEl ? entitlementEl.value : null;
             const img = tr.querySelector("td:nth-child(2) img");
             const imgSrc = img ? img.getAttribute("src") : "";
             const status = imgSrc.includes("checkmark") ? "permitted" : imgSrc.includes("dash") ? "inherited" : "restricted";
-            if (name && entitlement) {
-                privileges[name.replace(/^"+|"+$/g, "")] = { status, entitlement };
-            }
+            if (name && entitlement) out.push({ name, status, entitlement });
+        });
+        return out;
+    };
+
+    // ===== 9. Add Download JSON button =====
+    addButton("Download JSON", () => {
+        const privileges = {};
+        readPrivilegeRows().forEach(({ name, status, entitlement }) => {
+            privileges[name] = { status, entitlement };
         });
 
         const data = {
@@ -129,7 +144,22 @@
         a.click();
     });
 
-    // ===== 8. Add Refresh Frame button =====
+    // ===== 10. Add Download CSV button (Blackboard native import/export format, added Dec 2025) =====
+    addButton("Download CSV (Blackboard Import Format)", () => {
+        const csvRows = readPrivilegeRows().map(({ name, status, entitlement }) => ({
+            name,
+            permitted: status === "permitted",
+            entitlement
+        }));
+        const csv = buildPrivilegesCsv(csvRows);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const a = d.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${roleName}_privileges.csv`;
+        a.click();
+    });
+
+    // ===== 11. Add Refresh Frame button =====
     addButton("Refresh Frame", () => { f.contentWindow.location.reload(); });
 
 })();

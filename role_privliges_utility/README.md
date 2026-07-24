@@ -6,8 +6,8 @@ A lightweight admin helper for Blackboard’s **Manage Privileges** page.
 
 - Displays an on-page **control panel**.
 - **Toggles** entitlement codes beside each privilege name.
-- **Exports** the current privileges to a **pretty‑printed JSON** file.
-- **Uploads** a JSON file to **compare**, flags mismatches with ⚠, and provides quick **filters**.
+- **Exports** the current privileges to a **pretty‑printed JSON** file, or to a **CSV** file in Blackboard's native Manage Privileges import/export format.
+- **Uploads** a JSON or CSV file to **compare**, flags mismatches with ⚠, and provides quick **filters**.
 - Keeps **Select‑All** behavior scoped to **visible rows** when filters are active.
 
 > ✅ Built specifically for the **Manage Privileges** page with **Show All** enabled.
@@ -54,9 +54,26 @@ A lightweight admin helper for Blackboard’s **Manage Privileges** page.
 4. Use the panel:
    - **Toggle Entitlements**: show/hide entitlement code pills next to names.
    - **Download JSON**: saves `bb_role_{type}_{role}_{timestamp}.json`, pretty‑printed.
-   - **Upload JSON (Compare)**: choose a prior export to flag differences.
+   - **Download CSV (Blackboard Import Format)**: saves `{role}_privileges.csv`, matching Blackboard's own native Manage Privileges import/export format so it can be re-imported into Blackboard directly.
+   - **Upload JSON / CSV (Compare)**: choose a prior JSON export, or a native Blackboard CSV export, to flag differences. Format is detected automatically by file extension.
    - **Filters**: `Mismatch`, `Permit` (expected permitted but actual restricted), `Restrict` (expected restricted but actual permitted), `Show All`.
    - **Refresh Page**: reloads the framed content.
+
+---
+
+## CSV Support (Blackboard Import Format)
+
+Blackboard added a native **import and export privileges** feature for System and Course roles in the [December 2025 release](https://help.anthology.com/blackboard/administrator/en/whats-new/2025-archived-release-notes/december-2025-release-notes--4000-4-.html#import-and-export-privileges-for-system-and-course-roles). Its format is a simple 3-column CSV:
+
+```
+"Privileges","Permitted","Entitlement ID"
+"Manage Courses","true","course.manage"
+"View Grades","false","grades.view"
+```
+
+- **Download CSV** produces this exact format (UTF-8 BOM, `true`/`false`, quoted fields), so the file can be fed straight back into Blackboard's own **Import** feature to clone or bulk-set a role — not just used by this tool.
+- **Upload (Compare)** accepts this format as an alternative to the tool's own JSON. Since the native format has no "inherited" state, any row with `Permitted=false` is treated as **restricted** for comparison purposes, even if the page shows it as inherited.
+- Comparison for CSV uploads matches by **Entitlement ID**, same as JSON uploads.
 
 ---
 
@@ -125,8 +142,8 @@ Filters:
 - **Download works but names look wrong**  
   The script strips out the injected entitlement pill from `<th>` when capturing the name. If you still see issues, the page markup may differ; file an issue with example HTML.
 
-- **Upload JSON (Compare) does nothing**  
-  Make sure the uploaded file contains a top-level `privileges` object. Role type mismatches (e.g., comparing a Course-role JSON on a System-role page) will show a warning and stop.
+- **Upload JSON / CSV (Compare) does nothing**  
+  Make sure the uploaded file contains a top-level `privileges` object (JSON) or at least one valid data row (CSV). Role type mismatches (e.g., comparing a Course-role JSON on a System-role page) will show a warning and stop.
 
 ---
 

@@ -160,6 +160,57 @@
   };
 
   /**************************************************************
+   * Blackboard native privileges CSV (import/export format added Dec 2025)
+   * https://help.anthology.com/blackboard/administrator/en/whats-new/2025-archived-release-notes/december-2025-release-notes--4000-4-.html#import-and-export-privileges-for-system-and-course-roles
+   *************************************************************/
+  const parseCsvRows = (text) => {
+    const rows = [];
+    let i = 0, field = '', row = [], inQuotes = false;
+    const s = text.replace(/^\uFEFF/, '');
+    const n = s.length;
+    while (i < n) {
+      const c = s[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (s[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += c; i++; continue;
+      }
+      if (c === '"') { inQuotes = true; i++; continue; }
+      if (c === ',') { row.push(field); field = ''; i++; continue; }
+      if (c === '\r') { i++; continue; }
+      if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+      field += c; i++;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.length > 1 || r[0] !== '');
+  };
+
+  const parsePrivilegesCsv = (text) => {
+    const rows = parseCsvRows(text);
+    if (!rows.length) return [];
+    const looksLikeHeader = (rows[0][0] || '').toLowerCase().includes('privilege');
+    const body = looksLikeHeader ? rows.slice(1) : rows;
+    return body
+      .filter(r => r.length >= 3 && r[2])
+      .map(r => ({ name: r[0], permitted: String(r[1]).trim().toLowerCase() === 'true', entitlement: r[2] }));
+  };
+
+  // Convert a native CSV upload into the same {source, privileges} shape used by the JSON format
+  const csvToCompareData = (text, filename) => {
+    const rows = parsePrivilegesCsv(text);
+    const privileges = {};
+    rows.forEach(({ name, permitted, entitlement }) => {
+      privileges[name] = { status: permitted ? 'permitted' : 'restricted', entitlement };
+    });
+    return {
+      source: { format: 'Blackboard native CSV', file: filename || '' },
+      privileges
+    };
+  };
+
+  /**************************************************************
    * Render: SOURCE section ("key = value" per line)
    *************************************************************/
   const renderSourceLines = (doc, panel, data) => {
@@ -310,24 +361,26 @@
   // 3) Build the panel
   const panel = ensurePanel(doc);
 
-  // 4) Build the top row (Upload JSON, Refresh Page) once
+  // 4) Build the top row (Upload JSON/CSV, Refresh Page) once
   const primaryRow = panel.querySelector('#buttonRowPrimary');
   if (!primaryRow.dataset._init) {
     primaryRow.innerHTML = '';
 
-    // Upload JSON button
-    addButton(doc, primaryRow, 'Upload JSON', () => {
+    // Upload JSON or CSV button
+    addButton(doc, primaryRow, 'Upload JSON / CSV', () => {
       const input = doc.createElement('input');
       input.type = 'file';
-      input.accept = '.json,application/json';
+      input.accept = '.json,.csv,application/json,text/csv';
       input.onchange = (ev) => {
         const file = ev.target.files && ev.target.files[0];
         if (!file) return;
+        const isCsv = /\.csv$/i.test(file.name);
 
         const reader = new FileReader();
         reader.onload = (e) => {
           try {
-            const data = JSON.parse(String(e.target.result || '{}'));
+            const text = String(e.target.result || '');
+            const data = isCsv ? csvToCompareData(text, file.name) : JSON.parse(text || '{}');
             if (!data || typeof data !== 'object') throw new Error('Invalid format');
 
             // SOURCE lines under top row
@@ -336,7 +389,7 @@
             // Compare and show filters
             runComparison(doc, panel, data);
           } catch {
-            alert('Invalid JSON file or structure.');
+            alert(isCsv ? 'Invalid CSV file or structure.' : 'Invalid JSON file or structure.');
           }
         };
         reader.readAsText(file);

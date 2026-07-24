@@ -4,7 +4,7 @@
     "description": "Executes all three functions - Display Entitlements, Role Download, and Role Compare.",
     "path": "role_privliges_utility/role_privliges_utility.min.bk.js",
     "category": "Role Managers",
-    "lastUpdated": "2025-09-28"
+    "lastUpdated": "2026-07-24"
   },
   {
     "label": "Bb Display Entitlements",
@@ -15,17 +15,17 @@
   },
   {
     "label": "Bb Role Compare",
-    "description": "Compares system roles against a JSON file to highlight mismatches.",
+    "description": "Compares system roles against a JSON or Blackboard-native CSV file to highlight mismatches",
     "path": "role_compare/blackboard_role_compare_bookmarklet.min.bm.js",
     "category": "Role Managers",
-    "lastUpdated": "2025-09-26"
+    "lastUpdated": "2026-07-24"
   },
   {
     "label": "Bb Role Download",
-    "description": "Downloads all system roles and their entitlements as a JSON file.",
+    "description": "Downloads all system roles and their entitlements as a JSON or Blackboard-native CSV file",
     "path": "role_download/blackboard_role_download_bookmarklet.min.bm.js",
     "category": "Role Managers",
-    "lastUpdated": "2025-09-26"
+    "lastUpdated": "2026-07-24"
   },
   {
     "label": "Bb Analytics IDs",
