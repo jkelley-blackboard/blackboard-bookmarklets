@@ -220,14 +220,14 @@
         return;
       }
       if(FORMAT === 'json'){
-        downloadFile(JSON.stringify(nodes, null, 2), `ih-children-${START_NODE_ID}-${FILE_STAMP}.json`, 'application/json');
+        downloadFile(JSON.stringify(nodes, null, 2), `IH-nodes-export-${FILE_STAMP}.json`, 'application/json');
       }else if(FORMAT === 'rtf'){
         const roots = buildOutlineTree(nodes);
         const rtf = buildOutlineDocument(roots);
-        downloadFile(rtf, `ih-outline-${START_NODE_ID}-${FILE_STAMP}.rtf`, 'application/rtf');
+        downloadFile(rtf, `IH-nodes-export-${FILE_STAMP}.rtf`, 'application/rtf');
       }else{
         const rows = await buildRows(nodes);
-        downloadFile(rows.join('\n'), `ih-children-${START_NODE_ID}-${FILE_STAMP}.txt`, 'text/plain');
+        downloadFile(rows.join('\n'), `IH-nodes-export-${FILE_STAMP}.txt`, 'text/plain');
       }
     }catch(err){
       console.error(err);

@@ -35,7 +35,7 @@ Entering anything other than `1`, `2`, or `3` (or cancelling the prompt) aborts 
 
 ### Pipe-delimited snapshot (.txt)
 
-The downloaded file (`ih-children-_1_1-<hostname>-<date>.txt`) is **pipe-delimited** (no quotes):
+The downloaded file (`IH-nodes-export-<hostname>-<date>.txt`) is **pipe-delimited** (no quotes):
 
 ```
 parent_node_key|external_node_key|name|description
@@ -52,11 +52,11 @@ parent_node_key|external_node_key|name|description
 
 ### JSON (.json)
 
-Produces `ih-children-_1_1-<hostname>-<date>.json` — the flat array of node objects exactly as returned by the REST API's combined `results` pages, with no restructuring or field filtering. Useful if you want to script further processing (e.g. build your own tree, filter by attribute) without re-fetching. Every object includes the REST `id` field (`_nnn_1` format) as-is.
+Produces `IH-nodes-export-<hostname>-<date>.json` — the flat array of node objects exactly as returned by the REST API's combined `results` pages, with no restructuring or field filtering. Useful if you want to script further processing (e.g. build your own tree, filter by attribute) without re-fetching. Every object includes the REST `id` field (`_nnn_1` format) as-is.
 
 ### Word-compatible outline (.rtf)
 
-Instead of a flat file, this produces `ih-outline-_1_1-<hostname>-<date>.rtf` — a Rich Text Format document that opens directly in Microsoft Word (or Word Online/LibreOffice Writer). Each node is written as a heading-level paragraph matching its depth in the hierarchy (Heading 1 for top-level nodes, Heading 2 for their children, and so on), so:
+Instead of a flat file, this produces `IH-nodes-export-<hostname>-<date>.rtf` — a Rich Text Format document that opens directly in Microsoft Word (or Word Online/LibreOffice Writer). Each node is written as a heading-level paragraph matching its depth in the hierarchy (Heading 1 for top-level nodes, Heading 2 for their children, and so on), so:
 
 - **View → Outline** in Word shows the full hierarchy and lets you promote, demote, and collapse/expand branches.
 - Node descriptions (if present) appear as italicized body text nested under their node.
@@ -77,12 +77,12 @@ See the [Blackboard Ally departmental reports documentation](https://help.anthol
 
 ## Filenames
 
-Every export filename includes the Blackboard site hostname and today's date, so files from different environments or runs don't collide, e.g.:
+Every export filename starts with `IH-nodes-export-` and includes the Blackboard site hostname and today's date, so files from different environments or runs don't collide, e.g.:
 
 ```
-ih-children-_1_1-mysite.blackboard.com-2026-07-24.txt
-ih-children-_1_1-mysite.blackboard.com-2026-07-24.json
-ih-outline-_1_1-mysite.blackboard.com-2026-07-24.rtf
+IH-nodes-export-mysite.blackboard.com-2026-07-24.txt
+IH-nodes-export-mysite.blackboard.com-2026-07-24.json
+IH-nodes-export-mysite.blackboard.com-2026-07-24.rtf
 ```
 
 ---
