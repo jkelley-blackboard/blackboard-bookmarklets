@@ -64,10 +64,10 @@
   },
   {
     "label": "Institutional Hierarchy Export",
-    "description": "Exports all nodes as a pipe-delimited snapshot or a Word-compatible outline",
+    "description": "Exports all nodes as a pipe-delimited snapshot, JSON, or a Word .docx outline",
     "path": "institutionalHierarchy_export/institutionalHierarchy_export_bookmarklet.min.bk.js",
     "category": "Extractors",
-    "lastUpdated": "2026-07-24"
+    "lastUpdated": "2026-07-27"
   },
   {
     "label": "User UUID Export",
