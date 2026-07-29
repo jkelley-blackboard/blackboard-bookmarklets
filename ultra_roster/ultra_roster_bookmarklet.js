@@ -54,7 +54,7 @@
     rolesJson.results.forEach(r => { roleMap[r.roleId] = r.nameForCourses || r.roleId; });
 
     // ── Build Table Rows ──────────────────────────────────────────────────
-    let rowsHtml = '';
+    const rosterRows = [];
     const csvRows = [['Name', 'Username', 'Email', 'Student ID', 'Other Name', 'Pronouns', 'Pronunciation', 'Role', 'Availability', 'Enrollment Date', 'Last Login', 'Last Accessed']];
 
     usersJson.results.forEach(item => {
@@ -69,38 +69,67 @@
       let pron = u.pronunciation || '';
       if (u.pronunciationAudio?.viewUrl) pron += (pron ? ' ' : '') + '🔊';
 
-      const fullName    = `${u.name?.given || ''} ${u.name?.family || ''}`.trim();
-      const email       = u.contact?.email || u.contact?.institutionEmail || '';
-      const role           = roleMap[item.courseRoleId] || item.courseRoleId || '';
-      const availability   = item.availability?.available || '';
+      const fullName = `${u.name?.given || ''} ${u.name?.family || ''}`.trim();
+      const email = u.contact?.email || u.contact?.institutionEmail || '';
+      const role = roleMap[item.courseRoleId] || item.courseRoleId || '';
+      const availability = item.availability?.available || '';
       const enrollmentDate = fmtDate(item.created);
-      const lastLogin      = fmtDate(u.lastLogin);
-      const lastAccessed   = fmtDate(item.lastAccessed);
-      const avatarSrc   = u.avatar?.viewUrl || 'https://static.bbcdn.io/images/avatars/default.svg';
+      const lastLogin = fmtDate(u.lastLogin);
+      const lastAccessed = fmtDate(item.lastAccessed);
+      const avatarSrc = u.avatar?.viewUrl || 'https://static.bbcdn.io/images/avatars/default.svg';
 
+      rosterRows.push({ fullName, username: u.userName || '', email, studentId: u.studentId || '', otherName, pronouns: u.pronouns || '', pronunciation: pron, role, availability, enrollmentDate, lastLogin, lastAccessed, avatarSrc });
       csvRows.push([fullName, u.userName || '', email, u.studentId || '', otherName, u.pronouns || '', pron, role, availability, enrollmentDate, lastLogin, lastAccessed]);
+    });
 
-      rowsHtml += `
+    function buildOverlayRowsHtml(rows) {
+      return rows.map(row => `
         <tr class="MuiTableRow-root">
           <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-s0" style="padding:6px 10px">
             <div class="MuiAvatar-root MuiAvatar-circular" style="width:32px;height:32px">
-              <img class="MuiAvatar-img" src="${esc(avatarSrc)}" alt="${esc(fullName)}">
+              <img class="MuiAvatar-img" src="${esc(row.avatarSrc)}" alt="${esc(row.fullName)}">
             </div>
           </td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-s1 bb-trunc" title="${esc(fullName)}">${esc(fullName)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-trunc" title="${esc(u.userName || '')}">${esc(u.userName || '')}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-trunc" title="${esc(email)}">${esc(email)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(u.studentId || '')}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(otherName)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(u.pronouns || '')}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(pron)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(role)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(availability)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(enrollmentDate)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(lastLogin)}</td>
-          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(lastAccessed)}</td>
-        </tr>`;
-    });
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-s1 bb-trunc" title="${esc(row.fullName)}">${esc(row.fullName)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-trunc" title="${esc(row.username)}">${esc(row.username)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium bb-trunc" title="${esc(row.email)}">${esc(row.email)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.studentId)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.otherName)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.pronouns)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.pronunciation)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.role)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.availability)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.enrollmentDate)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.lastLogin)}</td>
+          <td class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium">${esc(row.lastAccessed)}</td>
+        </tr>`).join('');
+    }
+
+    function buildPrintRowsHtml(rows) {
+      return rows.map(row => `
+        <tr>
+          <td>${esc(row.fullName)}</td>
+          <td>${esc(row.username)}</td>
+          <td>${esc(row.email)}</td>
+          <td>${esc(row.studentId)}</td>
+          <td>${esc(row.otherName)}</td>
+          <td>${esc(row.pronouns)}</td>
+          <td>${esc(row.pronunciation)}</td>
+          <td>${esc(row.role)}</td>
+          <td>${esc(row.availability)}</td>
+          <td>${esc(row.enrollmentDate)}</td>
+          <td>${esc(row.lastLogin)}</td>
+          <td>${esc(row.lastAccessed)}</td>
+        </tr>`).join('');
+    }
+
+    function buildPrintWindowHtml() {
+      const printRowsHtml = buildPrintRowsHtml(rosterRows);
+      const printDate = new Date().toLocaleString();
+      return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${esc(courseTitle)} — Roster Print</title><style>body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#111}h1{margin:0 0 8px;font-size:20px}p{margin:0 0 16px;color:#666;font-size:12px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f5f5f5;font-weight:700}tr:nth-child(even){background:#fafafa}.toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px}.toolbar button{padding:8px 14px;border:none;border-radius:4px;background:#1d3557;color:#fff;cursor:pointer}@media print{body{padding:0} .toolbar{display:none}}</style></head><body><div class="toolbar"><button onclick="window.print()">🖨 Print</button><button onclick="window.close()">✖ Close</button></div><h1>${esc(courseTitle)}</h1><p>${rosterRows.length} enrolled users • Printed ${esc(printDate)}</p><table><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Student ID</th><th>Other Name</th><th>Pronouns</th><th>Pronunciation</th><th>Role</th><th>Availability</th><th>Enrollment Date</th><th>Last Login</th><th>Last Accessed</th></tr></thead><tbody>${printRowsHtml}</tbody></table></body></html>`;
+    }
+
+    const rowsHtml = buildOverlayRowsHtml(rosterRows);
 
     // ── Render Overlay ────────────────────────────────────────────────────
     const overlay = document.createElement('div');
@@ -135,6 +164,7 @@
           <p>${usersJson.results.length} enrolled users</p>
         </div>
         <div id="bbRosterHeaderBtns">
+          <button id="bbRosterPrint">🖨 Print</button>
           <button id="bbRosterCsv">⬇ CSV</button>
           <button id="bbRosterClose">✖ Close</button>
         </div>
@@ -171,6 +201,18 @@
 
     // ── Event Handlers ────────────────────────────────────────────────────
     document.getElementById('bbRosterClose').onclick = () => overlay.remove();
+
+    document.getElementById('bbRosterPrint').onclick = () => {
+      const html = buildPrintWindowHtml();
+      const win = window.open('', '_blank', 'width=1200,height=900');
+      if (!win) {
+        alert('⚠ Pop-up was blocked. Please allow pop-ups for this site and try again.');
+        return;
+      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    };
 
     document.getElementById('bbRosterCsv').onclick = () => {
       const csv = csvRows

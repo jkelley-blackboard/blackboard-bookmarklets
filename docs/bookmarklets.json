@@ -53,7 +53,7 @@
     "description": "Generates a full course roster with avatar, pronouns, role, enrollment date, and access data — CSV-exportable",
     "path": "ultra_roster/ultra_roster_bookmarklet.min.bk.js",
     "category": "Extractors",
-    "lastUpdated": "2026-06-26"
+    "lastUpdated": "2026-07-29"
   },
   {
     "label": "Building Blocks Compare",
