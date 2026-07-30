@@ -27,7 +27,7 @@ Generates a full, print-ready course roster overlay for any Blackboard LMS Ultra
 - Long text cells (Name, Username, Email) truncate with ellipsis; hover the cell to see the full value.
 - Date fields (Enrollment Date, Last Login, Last Accessed) use `yyyymmdd-hh:mm` format so sorting alphabetically in Excel produces chronological order.
 - Overlay buttons: Print (`🖨`), Close (`✖`), Download CSV (`⬇`).
-- Print view opens a dedicated browser window with a print-friendly roster table (including avatars) for paper or PDF export.
+- Print view opens a dedicated browser window with a **Table** view (full data columns, including avatars) or a **Cards** view (photo-forward grid with name, role, pronouns, and email) — toggle between them before printing or saving as PDF.
 - CSV export includes all columns except Avatar; UTF-8 BOM ensures correct encoding in Excel.
 - Collapses to full-screen on narrow viewports (≤ 768px).
 - All API fetches run concurrently for fast load on large courses.
@@ -47,7 +47,7 @@ Generates a full, print-ready course roster overlay for any Blackboard LMS Ultra
 1. Navigate to any Blackboard LMS Ultra course page (URL contains `/ultra/courses/`).
 2. Click the **Bb Course Roster** bookmarklet.
 3. A full-screen overlay will appear with the complete roster table.
-4. Use **Print** to open a printer-friendly roster window, **Close** to dismiss, or **Download CSV** to save as `{courseId}_roster.csv`.
+4. Use **Print** to open a printer-friendly roster window (toggle **Table** or **Cards** view there before printing), **Close** to dismiss, or **Download CSV** to save as `{courseId}_roster.csv`.
 
 ### Notes & Troubleshooting
 
