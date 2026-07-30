@@ -27,7 +27,7 @@ Generates a full, print-ready course roster overlay for any Blackboard LMS Ultra
 - Long text cells (Name, Username, Email) truncate with ellipsis; hover the cell to see the full value.
 - Date fields (Enrollment Date, Last Login, Last Accessed) use `yyyymmdd-hh:mm` format so sorting alphabetically in Excel produces chronological order.
 - Overlay buttons: Print (`🖨`), Close (`✖`), Download CSV (`⬇`).
-- Print view opens a dedicated browser window with a print-friendly roster table for paper or PDF export.
+- Print view opens a dedicated browser window with a print-friendly roster table (including avatars) for paper or PDF export.
 - CSV export includes all columns except Avatar; UTF-8 BOM ensures correct encoding in Excel.
 - Collapses to full-screen on narrow viewports (≤ 768px).
 - All API fetches run concurrently for fast load on large courses.
