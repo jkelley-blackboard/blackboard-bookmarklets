@@ -103,5 +103,12 @@
     "path": "css_selector_auditor/css_selector_auditor_bookmarklet.min.bk.js",
     "category": "Other Tools",
     "lastUpdated": "2026-08-16"
+  },
+  {
+    "label": "Bb DOM Snapshot Downloader",
+    "description": "Downloads the current page's live, rendered DOM as a standalone HTML file",
+    "path": "dom_snapshot/dom_snapshot_bookmarklet.min.bk.js",
+    "category": "Extractors",
+    "lastUpdated": "2026-08-16"
   }
 ]
