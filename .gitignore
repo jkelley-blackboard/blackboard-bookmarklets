@@ -1,0 +1,5 @@
+# Claude Code context file — local only, do not commit
+CLAUDE.md
+
+# npm dependencies (terser, used for bookmarklet minification)
+node_modules/
