@@ -101,7 +101,7 @@
     "label": "Bb CSS Selector Auditor",
     "description": "Scans live stylesheets for custom-property-driven CSS rules and reports selector match, outline, display, and collapse state against the current DOM",
     "path": "css_selector_auditor/css_selector_auditor_bookmarklet.min.bk.js",
-    "category": "Extractors",
+    "category": "Other Tools",
     "lastUpdated": "2026-08-16"
   }
 ]
