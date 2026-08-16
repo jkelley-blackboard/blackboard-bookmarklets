@@ -1,6 +1,6 @@
-# Blackboard Learn Test Extractor (Bookmarklet)
+# Blackboard LMS Test Extractor (Bookmarklet)
 
-Extracts **question-level results** and **question analysis** for Blackboard Learn Ultra tests by calling internal and public REST APIs:
+Extracts **question-level results** and **question analysis** for Blackboard LMS tests by calling internal and public REST APIs:
 
 ```
 GET  /learn/api/v1/courses/{courseId}/gradebook/columns
@@ -18,7 +18,7 @@ This repository provides:
 
 ## Usage
 
-1. Log into your Blackboard Learn Ultra instance and navigate to any course.
+1. Log into your Blackboard LMS instance and navigate to any course.
 2. Click the bookmarklet.
 3. A **panel** appears in the top-right corner listing all tests found in the course gradebook.
 4. **Select** one or more tests using the checkboxes.

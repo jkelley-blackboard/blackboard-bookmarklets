@@ -1,6 +1,6 @@
-# Blackboard Learn UUID Lookup (Bookmarklet & Script)
+# Blackboard LMS UUID Lookup (Bookmarklet & Script)
 
-Looks up the internal **UUID** for a list of usernames by calling the Blackboard Learn REST API:
+Looks up the internal **UUID** for a list of usernames by calling the Blackboard LMS REST API:
 
 ```
 GET /learn/api/public/v1/users/userName:{username}?fields=uuid
@@ -15,7 +15,7 @@ This repository provides:
 
 ## Usage
 
-1. Log into your Blackboard Learn instance.
+1. Log into your Blackboard LMS instance.
 2. Click the bookmarklet (or paste the expanded script into the browser console).
 3. A **file picker** opens — select your input file.
 4. A **prompt** asks for the output format (see below).

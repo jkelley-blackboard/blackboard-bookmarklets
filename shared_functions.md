@@ -128,7 +128,7 @@ const isShowAll = doc => new URLSearchParams(doc.location.search).get('showAll')
 **Returns:** An async object containing:
 
 - `host` *(string)* — The host domain.
-- `bbVersion` *(string)* — Blackboard Learn version (e.g., `3900.91.0-rel.21+f6adf77`).
+- `bbVersion` *(string)* — Blackboard LMS version (e.g., `3900.91.0-rel.21+f6adf77`).
 - `timestamp` *(string)* — ISO timestamp when retrieved.
 
 **Example usage:**

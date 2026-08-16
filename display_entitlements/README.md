@@ -59,7 +59,7 @@ display_entitlements/
 ---
 
 ## Security & Disclaimer
-This bookmarklet is **experimental** and provided **as-is**, without warranty or official support. Use at your own risk. It is intended for Blackboard Learn SaaS environments and may not be compatible with older or heavily customized Blackboard installations.
+This bookmarklet is **experimental** and provided **as-is**, without warranty or official support. Use at your own risk. It is intended for Blackboard LMS (SaaS/Ultra) environments and may not be compatible with older or heavily customized Blackboard installations.
 
 If you plan to share this tool with other admins, consider reviewing your institution's policy for deploying custom scripts/tools.
 

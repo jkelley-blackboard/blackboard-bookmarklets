@@ -1,5 +1,5 @@
 /**
- * Blackboard Learn — Export Users with "Other" Names (Expanded JS)
+ * Blackboard LMS — Export Users with "Other" Names (Expanded JS)
  * Endpoint: GET /learn/api/public/v1/users?fields=userName,name.given,name.other,lastLogin&lastLogin={date}&limit=200
  *
  * Prompts for a lastLogin cutoff date (YYYY-MM-DD). Returns all users who logged in

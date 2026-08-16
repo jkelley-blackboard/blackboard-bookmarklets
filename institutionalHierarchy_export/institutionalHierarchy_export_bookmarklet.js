@@ -1,5 +1,5 @@
 /**
- * Blackboard Learn IH Children Export (Expanded JS)
+ * Blackboard LMS IH Children Export (Expanded JS)
  * Endpoint: GET /learn/api/public/v1/institutionalHierarchy/nodes/{nodeId}/children?recursive=true
  * Output: prompted at runtime — one of three formats:
  *         1) Pipe-delimited snapshot (.txt): parent_node_key|external_node_key|name|description

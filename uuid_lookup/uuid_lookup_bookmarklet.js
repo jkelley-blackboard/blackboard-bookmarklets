@@ -1,5 +1,5 @@
 /**
- * Blackboard Learn UUID Lookup from File (Expanded JS)
+ * Blackboard LMS UUID Lookup from File (Expanded JS)
  * Endpoint: GET /learn/api/public/v1/users/userName:{username}?fields=uuid
  *
  * Input file format — no header, one per line or comma-separated:

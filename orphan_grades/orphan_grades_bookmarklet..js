@@ -1,5 +1,5 @@
 /**
- * Blackboard Learn Ultra — Orphan Grade Column Scanner
+ * Blackboard LMS — Orphan Grade Column Scanner
  * =====================================================
  * Scans a Blackboard course for grade columns that have no
  * corresponding content item in the course content tree.

@@ -1,10 +1,10 @@
 # Blackboard Other Names Extractor
 
-A bookmarklet to extract users with "other" names from Blackboard Learn using the REST API.
+A bookmarklet to extract users with "other" names from Blackboard LMS using the REST API.
 
 ## Overview
 
-This bookmarklet queries the Blackboard Learn REST API to find all users who have an "other" name field populated and have logged in since a specified date. It automatically handles pagination and exports the results as a CSV file.
+This bookmarklet queries the Blackboard LMS REST API to find all users who have an "other" name field populated and have logged in since a specified date. It automatically handles pagination and exports the results as a CSV file.
 
 ## Features
 
@@ -17,7 +17,7 @@ This bookmarklet queries the Blackboard Learn REST API to find all users who hav
 
 ## Usage
 
-1. Log into your Blackboard Learn instance
+1. Log into your Blackboard LMS instance
 2. Navigate to any page within Blackboard (must be logged in with API access)
 3. Click the bookmarklet in your bookmarks
 4. Enter a date in YYYY-MM-DD format (e.g., `2026-01-01`)
@@ -35,14 +35,14 @@ asmith456,Alice,Ally
 
 ## API Endpoint
 
-The bookmarklet uses the following Blackboard Learn REST API endpoint:
+The bookmarklet uses the following Blackboard LMS REST API endpoint:
 ```
 /learn/api/public/v1/users?fields=lastLogin,name.given,name.other,userName&lastLogin={date}&limit=100&offset={offset}
 ```
 
 ## Requirements
 
-- Blackboard Learn instance with REST API enabled
+- Blackboard LMS instance with REST API enabled
 - User account with appropriate API permissions to query user data
 - Modern browser with support for:
   - `fetch` API
@@ -53,7 +53,7 @@ The bookmarklet uses the following Blackboard Learn REST API endpoint:
 ## Permissions
 
 This bookmarklet requires:
-- Read access to Blackboard Learn REST API
+- Read access to Blackboard LMS REST API
 - Permission to query user information
 - Access to user name fields and login data
 

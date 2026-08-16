@@ -1,6 +1,6 @@
-# Blackboard Learn Institutional Hierarchy Children Export (Bookmarklet & Script)
+# Blackboard LMS Institutional Hierarchy Children Export (Bookmarklet & Script)
 
-Exports all **descendant nodes** of a given Institutional Hierarchy node from Blackboard Learn using the REST API endpoint:
+Exports all **descendant nodes** of a given Institutional Hierarchy node from Blackboard LMS using the REST API endpoint:
 
 ```
 GET /learn/api/public/v1/institutionalHierarchy/nodes/{nodeId}/children?recursive=true
@@ -78,7 +78,7 @@ This format matches the input expected by Terry Patterson's [Institutional Hiera
 
 The internal node id is no longer offered as a column/toggle in the pipe-delimited or `.docx` outputs — if you need it, use the **JSON** format, where every node object already includes its REST `id` field (e.g. `_957_1`).
 
-Ally Departmental Reports require an Institutional Role ID per department node in the format `ALLY_NODE_957_1`, where `957` is the PK1 of the node. You can derive this from the JSON export's `id` field for each node (e.g. in a spreadsheet, after flattening the JSON: `="ALLY_NODE_" & MID(id,2,LEN(id)-2)`).
+Blackboard® Ally Departmental Reports require an Institutional Role ID per department node in the format `ALLY_NODE_957_1`, where `957` is the PK1 of the node. You can derive this from the JSON export's `id` field for each node (e.g. in a spreadsheet, after flattening the JSON: `="ALLY_NODE_" & MID(id,2,LEN(id)-2)`).
 
 See the [Blackboard Ally departmental reports documentation](https://help.anthology.com/ally-lms/en/administrators/ally-institution-report/institution-report-directory/configure-blackboard-departmental-reports.html) for context.
 

@@ -1,7 +1,7 @@
 {
   "name": "blackboard-bookmarklets",
   "version": "1.0.0",
-  "description": "A collection of **experimental bookmarklets** for Blackboard Learn administrators and support teams. These lightweight tools run directly in your browser on the relevant Blackboard page — no installation, no extensions, no special permissions required.",
+  "description": "A collection of **experimental bookmarklets** for Blackboard LMS administrators and support teams. These lightweight tools run directly in your browser on the relevant Blackboard page — no installation, no extensions, no special permissions required.",
   "main": "index.js",
   "directories": {
     "doc": "docs"

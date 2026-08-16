@@ -1,6 +1,6 @@
 # Blackboard Course Info Bookmarklet
 
-This bookmarklet provides a lightweight way to fetch and view REST API data for courses directly from the **Admin > Courses > Courses** page in Blackboard Learn.  
+This bookmarklet provides a lightweight way to fetch and view REST API data for courses directly from the **Admin > Courses > Courses** page in Blackboard LMS.  
 It overlays small 🛈 icons next to each listed course, allowing you to quickly inspect or copy key details (e.g., ID, UUID, Ultra status, term, availability).
 
 ---
@@ -38,7 +38,7 @@ It overlays small 🛈 icons next to each listed course, allowing you to quickly
 
 ## ▶️ How to Use
 
-1. Log in to Blackboard Learn as an administrator.  
+1. Log in to Blackboard LMS as an administrator.  
 2. Navigate to **Admin Panel → Courses → Courses**.  
 3. Click your **Course Info 🛈** bookmark.  
 4. Wait a moment for the 🛈 icons to appear next to each Course ID.  

@@ -1,6 +1,6 @@
 # LTI Placements Viewer
 
-Displays all LTI placements registered on a Blackboard Learn instance, grouped by domain, with live search, filtering, and CSV export.
+Displays all LTI placements registered on a Blackboard LMS instance, grouped by domain, with live search, filtering, and CSV export.
 
 ---
 
@@ -55,7 +55,7 @@ Results are paginated automatically — all placements are retrieved regardless 
 
 ## Requirements
 
-- Logged in to Blackboard Learn as an administrator
+- Logged in to Blackboard LMS as an administrator
 - Entitlement to access LTI Tool Providers (`System Admin > Integrations > LTI Tool Providers`)
 
 ---
