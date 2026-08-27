@@ -82,6 +82,9 @@
         #${P} .r:hover  { border-color: #7aaddc; background: #f0f6ff; }
         #${P} .r .m     { flex: 1; min-width: 0; }
         #${P} .r .n     { font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #${P} .r .n a   { color: inherit; text-decoration: none; }
+        #${P} .r .n a:hover { text-decoration: underline; }
+        #${P} .r .n img { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }
         #${P} .r .d     { font-size: 11px; color: #888; }
         #${P} .r .u     { font-size: 10px; color: #555; font-family: monospace; word-break: break-all; }
         #${P} .r .g     { font-size: 10px; color: #999; }
@@ -142,6 +145,9 @@
     };
 
     const av = p => p.availability?.available !== "No";
+
+    // Direct link to the placement's edit page in the Original admin console
+    const editLink = p => `${O}/webapps/blackboard/execute/blti/modifyPlacement?cmd=edit&placementId=${encodeURIComponent(p.id)}&domainConfigId=${encodeURIComponent(p.domainId)}`;
 
     // Paginated fetch — retrieves all results regardless of total count
     async function get(url) {
@@ -211,9 +217,10 @@
                     .map(p => {
                         const fl = [p.allowStudents && "Students", p.allowGrading && "Grading"]
                             .filter(Boolean).join(" · ");
+                        const icon = p.iconUrl ? `<img src="${esc(p.iconUrl)}" alt="" onerror="this.remove()">` : "";
                         return `<div class=r>
                             <div class=m>
-                                <div class=n title="${esc(p.name)}">${esc(p.name || "?")}</div>
+                                <div class=n title="${esc(p.name)}"><a href="${esc(editLink(p))}" target="_blank" rel="noopener">${icon}${esc(p.name || "?")}</a></div>
                                 ${p.description ? `<div class=d>${esc(p.description)}</div>` : ""}
                                 ${p.url        ? `<div class=u>${esc(p.url)}</div>`         : ""}
                                 ${fl           ? `<div class=g>${fl}</div>`                 : ""}
@@ -242,13 +249,13 @@
                     av(p) ? "Yes" : "No",
                     p.allowStudents ? "Yes" : "No",
                     p.allowGrading  ? "Yes" : "No",
-                    p.url, p.description]
+                    p.url, p.description, editLink(p), p.iconUrl]
                 .map(v => `"${String(v || "").replace(/"/g, '""')}"`)
                 .join(",");
         });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(new Blob(
-            [["Domain,Primary Domain,Name,Type,Available,Allow Students,Allow Grading,URL,Description", ...rows].join("\n")],
+            [["Domain,Primary Domain,Name,Type,Available,Allow Students,Allow Grading,URL,Description,Edit Link,Icon URL", ...rows].join("\n")],
             { type: "text/csv" }
         ));
         a.download = `lti_placements_${new Date().toISOString().slice(0, 10)}.csv`;

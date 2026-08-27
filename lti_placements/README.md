@@ -16,7 +16,8 @@ Click the bookmarklet to open the panel. Click it again (or press **Escape**) to
 
 Placements are grouped by their registered domain (e.g. "Microsoft Teams for Learn Ultra", "Extensions-stage"). Each group shows:
 
-- **Placement name** and description (if present)
+- **Placement icon** (if the tool provider registered one) and **name**, linked directly to the placement's edit page in the Original admin console (`.../execute/blti/modifyPlacement?cmd=edit&placementId=...&domainConfigId=...`)
+- Description (if present)
 - **Launch URL**
 - **Type** — e.g. Application, Administrator, UltraUI, System, CourseNavigation
 - **Availability** — whether the placement is currently available
@@ -36,7 +37,7 @@ Placements are grouped by their registered domain (e.g. "Microsoft Teams for Lea
 
 The **⬇ CSV** button downloads the current filtered view as a dated CSV file with columns:
 
-`Domain, Primary Domain, Name, Type, Available, Allow Students, Allow Grading, URL, Description`
+`Domain, Primary Domain, Name, Type, Available, Allow Students, Allow Grading, URL, Description, Edit Link, Icon URL`
 
 ---
 
