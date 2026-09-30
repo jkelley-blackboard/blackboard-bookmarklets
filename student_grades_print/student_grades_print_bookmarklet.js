@@ -9,11 +9,14 @@
  * Automatically pages through all pages of grade items before printing.
  *
  * Usage: Open a course in Blackboard Ultra, navigate to Gradebook, click a
- * student row to open the individual student grades side panel (the panel
- * showing "Grades", "Progress", "Notes", etc. tabs), then click this
- * bookmarklet.
+ * student to open their individual grades view (the full page at
+ * /grades/individual-grades, or the older side panel), make sure the Grades
+ * tab is selected, then click this bookmarklet.
  *
- * DOM selectors target: .bb-offcanvas-panel[data-base-state-name="course.grades.peek"]
+ * APIs/Pages: /ultra/courses/{courseId}/grades/individual-grades?userId=...
+ *   (full page) or .bb-offcanvas-panel[data-base-state-name="course.grades.peek"]
+ *   (legacy side panel). On the full page, student and course details come from
+ *   /learn/api/public/v1/courses/{courseId} and /courses/{courseId}/users/{userId}.
  *
  * Author: Jeff Kelley / Blackboard Solutions Engineering
  */
@@ -22,11 +25,37 @@
   'use strict';
 
   // ── Page / panel guard ─────────────────────────────────────────────────────
-  const panel = document.querySelector('.bb-offcanvas-panel[data-base-state-name="course.grades.peek"]');
-  if (!panel || panel.getAttribute('aria-hidden') === 'true') {
-    alert('⚠ Please open a student\'s grade panel in the Blackboard gradebook first, then run this bookmarklet.');
+  // Two layouts are supported:
+  //   1. Legacy side panel: .bb-offcanvas-panel[data-base-state-name="course.grades.peek"]
+  //   2. Full page: /ultra/courses/{courseId}/grades/individual-grades?userId=...
+  const pageMatch = location.pathname.match(/\/ultra\/courses\/([^\/]+)\/grades\/individual-grades/);
+  const pageParams = new URLSearchParams(location.search);
+  const urlCourseId = pageMatch ? pageMatch[1] : null;
+  const urlUserId = pageParams.get('userId');
+  const isFullPage = !!(urlCourseId && urlUserId);
+
+  const peekPanel = document.querySelector('.bb-offcanvas-panel[data-base-state-name="course.grades.peek"]');
+  const peekOpen = peekPanel && peekPanel.getAttribute('aria-hidden') !== 'true';
+
+  if (!peekOpen && !isFullPage) {
+    alert('⚠ Please open a student\'s individual grades page in the Blackboard gradebook first, then run this bookmarklet.');
     return;
   }
+
+  // Root element to scope all DOM queries to. The full-page layout is still an
+  // off-canvas panel (.bb-offcanvas-panel.full.active), just without the
+  // course.grades.peek state name. Prefer the focused active panel that holds
+  // grade rows; fall back to the last active panel, then the whole document.
+  function findFullPagePanel() {
+    const active = Array.from(document.querySelectorAll('.bb-offcanvas-panel.active'));
+    const withRows = active.filter(function (p) { return p.querySelector('tr[data-testid^="course-student-grades-table-row-"]'); });
+    return withRows.find(function (p) { return p.classList.contains('panel-has-focus'); })
+      || withRows[withRows.length - 1]
+      || active.find(function (p) { return p.classList.contains('panel-has-focus'); })
+      || active[active.length - 1]
+      || document.body;
+  }
+  const panel = peekOpen ? peekPanel : findFullPagePanel();
 
   // ── Helper: escape HTML ────────────────────────────────────────────────────
   function esc(str) {
@@ -38,8 +67,8 @@
   }
 
   // ── Extract student metadata ───────────────────────────────────────────────
-  const studentName = (panel.querySelector('h1 bdi') || panel.querySelector('[class*="baseText"]'))?.innerText?.trim() || 'Unknown Student';
-  const courseName  = panel.querySelector('[class*="subHeader"]')?.innerText?.trim() || '';
+  let studentName = (panel.querySelector('h1 bdi') || panel.querySelector('[class*="baseText"]'))?.innerText?.trim() || 'Unknown Student';
+  let courseName  = panel.querySelector('[class*="subHeader"]')?.innerText?.trim() || '';
 
   const userFields = panel.querySelectorAll('[class*="userFieldContainer"]');
   let username = '', studentId = '', lastAccess = '';
@@ -225,7 +254,41 @@
     win.document.close();
   }
 
+  // ── Full-page layout: fill student/course metadata from the REST API ──────
+  // The URL carries the course and user PK1 IDs, which is more reliable than
+  // scraping header markup. DOM values above remain as the fallback.
+  function getJSON(path) {
+    return fetch(location.origin + path, { credentials: 'include' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + path); return r.json(); });
+  }
+
+  function loadApiMetadata() {
+    const base = '/learn/api/public/v1/courses/' + encodeURIComponent(urlCourseId);
+    return Promise.allSettled([
+      getJSON(base + '?fields=name'),
+      getJSON(base + '/users/' + encodeURIComponent(urlUserId) + '?expand=user&fields=lastAccessed,user.name,user.userName,user.studentId')
+    ]).then(function (res) {
+      const course = res[0].status === 'fulfilled' ? res[0].value : null;
+      const member = res[1].status === 'fulfilled' ? res[1].value : null;
+      res.forEach(function (r) { if (r.status === 'rejected') console.error('Student Grade Print:', r.reason); });
+
+      if (course?.name) courseName = course.name;
+      const u = member?.user;
+      if (u?.name) {
+        const full = [u.name.given, u.name.family].filter(Boolean).join(' ');
+        if (full) studentName = full;
+      }
+      if (u?.userName) username = u.userName;
+      if (u?.studentId) studentId = u.studentId;
+      if (member?.lastAccessed) lastAccess = new Date(member.lastAccessed).toLocaleString();
+    });
+  }
+
   // ── Kick off collection from page 1 ───────────────────────────────────────
-  collectPage();
+  if (isFullPage) {
+    loadApiMetadata().then(collectPage);
+  } else {
+    collectPage();
+  }
 
 })();

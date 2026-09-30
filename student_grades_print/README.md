@@ -28,8 +28,8 @@ Opens a clean, print-ready view of an individual student's gradebook as seen by 
 ## Usage
 
 1. Navigate to a course in Blackboard Ultra and open the Gradebook.
-2. Click any student row to open the individual student grades side panel.
-3. Ensure the **Grades** tab is selected in the panel (the default view).
+2. Click any student to open their individual grades view. Current Blackboard releases open this as a full page (URL contains `/grades/individual-grades?userId=...`); older releases open a side panel. Both are supported.
+3. Ensure the **Grades** tab is selected (the default view).
 4. Click the **Bb Student Grade Print** bookmarklet in your bookmarks bar.
 5. The bookmarklet will automatically page through all grade items — you may briefly see the panel advance through pages.
 6. A pop-up window opens with the complete print-ready grade view.
@@ -39,7 +39,7 @@ Opens a clean, print-ready view of an individual student's gradebook as seen by 
 
 - If you see a pop-up blocker warning, allow pop-ups for your Blackboard domain and try again.
 - The panel will visibly flip through pages while collecting data — this is expected. Do not click anything in the panel until the print window appears.
-- If the panel does not appear to be detected, confirm the student grades side panel is open and not minimized (it must be the active `course.grades.peek` panel).
+- If the page is not detected, confirm the URL contains `/grades/individual-grades` with a `userId` parameter, or (on older releases) that the student grades side panel is open and not minimized.
 - If grade items are missing, confirm the **Grades** tab (not Progress, Notes, or Activity Log) is selected before running the bookmarklet.
 - If a "timed out waiting for next page" alert appears, the page loaded slowly. Partial results will still print — re-run the bookmarklet to try again.
 - If student metadata fields (username, ID, last access) are blank after a Blackboard update, the label/value selector pattern may need updating — open an issue with the page HTML.
@@ -59,7 +59,8 @@ student_grades_print/
 
 ## Development / Implementation Notes
 
-- **Panel detection:** Targets `.bb-offcanvas-panel[data-base-state-name="course.grades.peek"]` and checks that `aria-hidden` is not `true`.
+- **Page detection:** Accepts either the full-page layout (`/ultra/courses/{courseId}/grades/individual-grades?userId=...`, introduced in a 2026 Blackboard update) or the legacy side panel (`.bb-offcanvas-panel[data-base-state-name="course.grades.peek"]` with `aria-hidden` not `true`). DOM queries are scoped to the legacy panel when present; otherwise to the active full-width off-canvas panel (`.bb-offcanvas-panel.full.active.panel-has-focus`) that contains grade rows.
+- **Metadata on the full page:** The course and user PK1 IDs are read from the URL and used to call `GET /learn/api/public/v1/courses/{courseId}` and `GET /learn/api/public/v1/courses/{courseId}/users/{userId}?expand=user` for course name, student name, username, student ID, and last access. Failed calls are logged to the console and the DOM-scraped values are kept as a fallback.
 - **Pagination:** The panel shows up to 19 items per page. The bookmarklet detects the Next Page button via `.js-pagination-page-up-button` and checks its `disabled` attribute to know when the last page is reached. After each `.click()`, it polls every 80ms for up to 5 seconds watching for the first visible item name to change, which confirms the DOM has re-rendered the new page. This avoids arbitrary `setTimeout` delays and handles slow network conditions gracefully.
 - **Student metadata:** Reads label/value pairs from `[class*="userFieldContainer"]` elements, matched case-insensitively by label text.
 - **Grade rows:** Selects `tr[data-testid^="course-student-grades-table-row-"]` — Blackboard stamps each row with the item name in `data-testid`, making row detection resilient to class name changes.
