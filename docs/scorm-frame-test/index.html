@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remote Lesson (off-LMS origin)</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; }
+  .marker { background: #fff3cd; padding: .5rem 1rem; border-left: 4px solid #e0a800; }
+  code { background: #eee; padding: 0 .25rem; }
+</style>
+</head>
+<body>
+<h1>Remote Lesson</h1>
+<p class="marker">REMOTE-CONTENT-MARKER: this text is served from an origin other than the LMS.</p>
+<p>Served from <code id="origin"></code>. Listening for messages: <code id="listening"></code>.</p>
+<p>Lesson body: a round of golf is played over a set number of holes, and the player with the fewest strokes wins.</p>
+
+<script>
+  // Mode comes from the stub page: ?listen=1 opts in to answering pings, ?listen=0 stays silent.
+  var listen = new URLSearchParams(location.search).get('listen') !== '0';
+  document.getElementById('origin').textContent = location.origin;
+  document.getElementById('listening').textContent = listen ? 'yes (opted in)' : 'no (silent)';
+
+  if (listen) {
+    // This listener is the "content opts in" case: code inside the content chooses to share.
+    window.addEventListener('message', function (e) {
+      if (!e.data || e.data.type !== 'xo-ping') return;
+      e.source.postMessage({
+        type: 'xo-pong',
+        from: location.origin,
+        title: document.title,
+        textSample: document.body.innerText.replace(/\s+/g, ' ').slice(0, 120)
+      }, '*');
+    });
+  }
+</script>
+</body>
+</html>
