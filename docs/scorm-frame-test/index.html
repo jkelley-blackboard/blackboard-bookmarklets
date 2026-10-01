@@ -7,32 +7,71 @@
   body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; }
   .marker { background: #fff3cd; padding: .5rem 1rem; border-left: 4px solid #e0a800; }
   code { background: #eee; padding: 0 .25rem; }
+  button { font: inherit; padding: .25rem .75rem; }
 </style>
 </head>
 <body>
 <h1>Remote Lesson</h1>
 <p class="marker">REMOTE-CONTENT-MARKER: this text is served from an origin other than the LMS.</p>
-<p>Served from <code id="origin"></code>. Listening for messages: <code id="listening"></code>.</p>
-<p>Lesson body: a round of golf is played over a set number of holes, and the player with the fewest strokes wins.</p>
+<p>Served from <code id="origin"></code>. Mode: <code id="mode"></code>.</p>
+<h2 id="screen-title"></h2>
+<p id="screen-body"></p>
+<p><button id="prev">Previous screen</button> <button id="next">Next screen</button></p>
 
 <script>
-  // Mode comes from the stub page: ?listen=1 opts in to answering pings, ?listen=0 stays silent.
-  var listen = new URLSearchParams(location.search).get('listen') !== '0';
+  // Mode comes from the stub page:
+  //   listening: answers pings (content opts in on request)
+  //   silent:    does nothing (control)
+  //   push:      sends its context up to the top page on load and on every screen change
+  var params = new URLSearchParams(location.search);
+  var mode = params.get('mode') || (params.get('listen') === '0' ? 'silent' : 'listening');
   document.getElementById('origin').textContent = location.origin;
-  document.getElementById('listening').textContent = listen ? 'yes (opted in)' : 'no (silent)';
+  document.getElementById('mode').textContent = mode;
 
-  if (listen) {
-    // This listener is the "content opts in" case: code inside the content chooses to share.
+  var screens = [
+    { title: 'Screen 1: The objective', body: 'A round of golf is played over a set number of holes, and the player with the fewest strokes wins.' },
+    { title: 'Screen 2: Par', body: 'Each hole has a par, the number of strokes an expert is expected to need. One under par is a birdie.' },
+    { title: 'Screen 3: Etiquette', body: 'Players keep pace, repair divots, and stay quiet while another player is swinging.' }
+  ];
+  var current = 0;
+
+  function context() {
+    return {
+      from: location.origin,
+      title: document.title,
+      screen: current + 1,
+      screenTitle: screens[current].title,
+      screenText: screens[current].body
+    };
+  }
+
+  // Send only to the LMS origin that framed us, not to '*'. The referrer is the stub page on the LMS.
+  var lmsOrigin = document.referrer ? new URL(document.referrer).origin : '*';
+
+  function render() {
+    document.getElementById('screen-title').textContent = screens[current].title;
+    document.getElementById('screen-body').textContent = screens[current].body;
+    if (mode === 'push') {
+      var msg = context();
+      msg.type = 'xo-context';
+      window.top.postMessage(msg, lmsOrigin);
+    }
+  }
+
+  document.getElementById('prev').onclick = function () { current = Math.max(0, current - 1); render(); };
+  document.getElementById('next').onclick = function () { current = Math.min(screens.length - 1, current + 1); render(); };
+
+  if (mode === 'listening') {
     window.addEventListener('message', function (e) {
       if (!e.data || e.data.type !== 'xo-ping') return;
-      e.source.postMessage({
-        type: 'xo-pong',
-        from: location.origin,
-        title: document.title,
-        textSample: document.body.innerText.replace(/\s+/g, ' ').slice(0, 120)
-      }, '*');
+      var msg = context();
+      msg.type = 'xo-pong';
+      msg.textSample = document.body.innerText.replace(/\s+/g, ' ').slice(0, 120);
+      e.source.postMessage(msg, '*');
     });
   }
+
+  render();
 </script>
 </body>
 </html>
