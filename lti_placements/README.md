@@ -17,6 +17,7 @@ Click the bookmarklet to open the panel. Click it again (or press **Escape**) to
 Placements are grouped by their registered domain (e.g. "Microsoft Teams for Learn Ultra", "Extensions-stage"). Each group shows:
 
 - **Placement icon** (if the tool provider registered one) and **name**, linked directly to the placement's edit page in the Original admin console (`.../execute/blti/modifyPlacement?cmd=edit&placementId=...&domainConfigId=...`)
+- **LTI version badge:** LTI 1.3 (green) or LTI 1.1 (amber), shown on the domain header and each placement
 - Description (if present)
 - **Launch URL**
 - **Type** — e.g. Application, Administrator, UltraUI, System, CourseNavigation
@@ -30,6 +31,7 @@ Placements are grouped by their registered domain (e.g. "Microsoft Teams for Lea
 - **Search** — filters across placement name, description, URL, and domain name
 - **Type** — dropdown populated from the types present on the system
 - **Status** — Available or Unavailable
+- **LTI version:** LTI 1.3 or LTI 1.1. Version is determined per domain: the REST API has no version field, so a domain with a `clientId` (and its JWKS URL or public key) is treated as 1.3, everything else as 1.1
 
 ---
 
@@ -37,7 +39,7 @@ Placements are grouped by their registered domain (e.g. "Microsoft Teams for Lea
 
 The **⬇ CSV** button downloads the current filtered view as a dated CSV file with columns:
 
-`Domain, Primary Domain, Name, Type, Available, Allow Students, Allow Grading, URL, Description, Edit Link, Icon URL`
+`Domain, Primary Domain, LTI Version, Name, Type, Available, Allow Students, Allow Grading, URL, Description, Edit Link, Icon URL`
 
 ---
 

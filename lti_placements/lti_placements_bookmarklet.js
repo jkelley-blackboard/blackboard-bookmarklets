@@ -89,6 +89,9 @@
         #${P} .r .u     { font-size: 10px; color: #555; font-family: monospace; word-break: break-all; }
         #${P} .r .g     { font-size: 10px; color: #999; }
         #${P} .r .k     { font-size: 10px; color: #555; text-align: right; white-space: nowrap; flex-shrink: 0; }
+        #${P} .v        { display: inline-block; padding: 0 5px; border-radius: 3px; font-size: 10px; font-weight: 700; color: #fff; background: #888; }
+        #${P} .v13      { background: #1a7f37; }
+        #${P} .v11      { background: #b26b00; }
         #${P} .ft       { padding: 5px 13px; border-top: 1px solid #eee; font-size: 10px; color: #aaa; flex-shrink: 0; }
     `;
 
@@ -107,6 +110,11 @@
         <div class=t>
             <input id=lps placeholder="Search…">
             <select id=lpt><option value="">All types</option></select>
+            <select id=lpl>
+                <option value="">All LTI</option>
+                <option value="1.3">LTI 1.3</option>
+                <option value="1.1">LTI 1.1</option>
+            </select>
             <select id=lpv>
                 <option value="">All status</option>
                 <option value=1>Available</option>
@@ -145,6 +153,15 @@
     };
 
     const av = p => p.availability?.available !== "No";
+
+    // LTI version is a property of the domain (tool provider), not the placement.
+    // The API has no version field: 1.3 domains carry a clientId and a JWKS URL or
+    // public key, while 1.1 domains have none of these.
+    const ver = id => {
+        const d = DM[id] || {};
+        return d.clientId || d.jwksUrl || d.publicKey ? "1.3" : "1.1";
+    };
+    const vb = id => { const v = ver(id); return `<span class="v v${v.replace(".", "")}">LTI ${v}</span>`; };
 
     // Direct link to the placement's edit page in the Original admin console
     const editLink = p => `${O}/webapps/blackboard/execute/blti/modifyPlacement?cmd=edit&placementId=${encodeURIComponent(p.id)}&domainConfigId=${encodeURIComponent(p.domainId)}`;
@@ -185,12 +202,14 @@
         const q  = lps.value.toLowerCase();
         const tp = lpt.value;
         const st = lpv.value;
+        const lv = lpl.value;
         return ALL.filter(p => {
             const { n, s } = dl(p.domainId);
             return (
                 (!q  || [p.name, p.url, p.description, n, s].some(v => (v || "").toLowerCase().includes(q)))
              && (!tp || p.type === tp)
              && (!st || (av(p) ? "1" : "0") === st)
+             && (!lv || ver(p.domainId) === lv)
             );
         });
     };
@@ -208,6 +227,7 @@
             .map(([id, items]) => {
                 const { n, s } = dl(id);
                 const header = `<div class=dh>
+                    ${vb(id)}
                     <span>${esc(n)}</span>
                     ${s ? `<span style="font-weight:400;font-family:monospace;font-size:10px;color:#aaa">${esc(s)}</span>` : ""}
                     <small>${items.length}p</small>
@@ -225,7 +245,7 @@
                                 ${p.url        ? `<div class=u>${esc(p.url)}</div>`         : ""}
                                 ${fl           ? `<div class=g>${fl}</div>`                 : ""}
                             </div>
-                            <div class=k>${esc(fmt(p.type))}<br>${av(p) ? "✓" : "✗"} ${av(p) ? "Avail" : "Unavail"}</div>
+                            <div class=k>${vb(p.domainId)}<br>${esc(fmt(p.type))}<br>${av(p) ? "✓" : "✗"} ${av(p) ? "Avail" : "Unavail"}</div>
                         </div>`;
                     }).join("");
                 return header + rows;
@@ -245,7 +265,7 @@
     lpd.onclick = () => {
         const rows = filt().map(p => {
             const { n, s } = dl(p.domainId);
-            return [n, s || n, p.name, p.type,
+            return [n, s || n, ver(p.domainId), p.name, p.type,
                     av(p) ? "Yes" : "No",
                     p.allowStudents ? "Yes" : "No",
                     p.allowGrading  ? "Yes" : "No",
@@ -255,7 +275,7 @@
         });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(new Blob(
-            [["Domain,Primary Domain,Name,Type,Available,Allow Students,Allow Grading,URL,Description,Edit Link,Icon URL", ...rows].join("\n")],
+            [["Domain,Primary Domain,LTI Version,Name,Type,Available,Allow Students,Allow Grading,URL,Description,Edit Link,Icon URL", ...rows].join("\n")],
             { type: "text/csv" }
         ));
         a.download = `lti_placements_${new Date().toISOString().slice(0, 10)}.csv`;
@@ -263,7 +283,7 @@
     };
 
     // ── Wire up filters ───────────────────────────────────────────────────────
-    lps.oninput = lpt.onchange = lpv.onchange = refresh;
+    lps.oninput = lpt.onchange = lpv.onchange = lpl.onchange = refresh;
 
     // ── Fetch placements and domains in parallel ──────────────────────────────
     Promise.all([
