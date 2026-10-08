@@ -15,6 +15,7 @@
 ## 2. Minification
 
 - Validate every `.min.bk.js` by pasting it into DevTools Console before distribution — a passing build isn't proof it still runs.
+- Bookmarklet URLs are percent-decoded before they run, so any `%` followed by two hex digits in the minified code turns into another character (`a%60` becomes a backtick, `h%24` becomes `$`). Pasting into the console won't catch this; running it from a bookmark will. Avoid the `%` operator in source (use `a - 60 * Math.floor(a / 60)`), and check the minified file with `grep -E '%[0-9A-Fa-f]{2}'`, which should return nothing.
 
 ---
 
