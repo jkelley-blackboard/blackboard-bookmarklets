@@ -16,83 +16,132 @@
     const O = location.origin;
     const P = ID;
 
+    // ── Theme ─────────────────────────────────────────────────────────────────
+    // Ultra publishes its MUI theme as --palette-* custom properties on the top
+    // page's :root. Read the resolved values (Original admin iframes don't have
+    // them) and fall back to Ultra's default theme. See SHARED_FUNCTIONS.md.
+    const getUltraTheme = doc => {
+        let cs = null;
+        try { cs = window.top.getComputedStyle(window.top.document.documentElement); } catch (e) { /* cross-origin top */ }
+        cs = cs || doc.defaultView.getComputedStyle(doc.documentElement);
+        const tok = (name, fallback) => {
+            const v = cs.getPropertyValue(`--${name}`).trim();
+            return v && !/[;{}<>]/.test(v) ? v : fallback;
+        };
+        return {
+            text: tok("palette-text-primary", "#262626"),
+            muted: tok("palette-text-secondary", "#666666"),
+            bg: tok("palette-background-default", "#ffffff"),
+            paper: tok("palette-background-paper", "#f8f8f8"),
+            divider: tok("palette-divider", "rgba(0,0,0,.12)"),
+            primary: tok("palette-primary-main", "#262626"),
+            primaryHover: tok("palette-primary-light", "#404040"),
+            onPrimary: tok("palette-primary-contrastText", "#ffffff"),
+            link: tok("palette-link-active", "#2073a1"),
+            linkHover: tok("palette-link-hover", "#004270"),
+            focus: tok("palette-focus-main", "#006dc7"),
+            success: tok("palette-success-main", "#007d2c"),
+            warning: tok("palette-warning-dark", "rgb(142,125,0)"),
+            error: tok("palette-error-main", "#c23e37"),
+            shadow: tok("shadows-8", "0 5px 5px -3px rgba(0,0,0,.2),0 8px 10px 1px rgba(0,0,0,.14),0 3px 14px 2px rgba(0,0,0,.12)")
+        };
+    };
+    const vars = Object.entries(getUltraTheme(document)).map(([k, v]) => `--bbp-${k}:${v}`).join(";");
+
     // ── Styles ────────────────────────────────────────────────────────────────
     // Injected inline to keep the bookmarklet self-contained.
     // Short class names (.h .t .b .r etc.) keep the minified size down.
     const css = `
         #${P} {
+            ${vars};
             position: fixed; top: 0; right: 0; bottom: 0;
             width: 660px; max-width: 100vw;
-            background: #fff;
-            border-left: 3px solid #002447;
-            box-shadow: -4px 0 16px rgba(0,0,0,.2);
+            background: var(--bbp-bg);
+            border-left: 1px solid var(--bbp-divider);
+            box-shadow: var(--bbp-shadow);
             z-index: 99999;
             display: flex; flex-direction: column;
-            font: 13px/1.4 Arial, sans-serif;
-            color: #222;
+            font: 13px/1.43 'Open Sans', sans-serif;
+            color: var(--bbp-text);
+            text-align: left;
         }
+        #${P}, #${P} * { box-sizing: border-box; }
+        #${P} button, #${P} input, #${P} select { font-family: inherit; }
+        #${P} :focus-visible { outline: 2px solid var(--bbp-focus); outline-offset: 2px; }
         #${P} .h {
-            background: #002447; color: #fff;
-            padding: 9px 13px;
+            background: var(--bbp-primary); color: var(--bbp-onPrimary);
+            padding: 10px 16px;
             display: flex; align-items: center; justify-content: space-between;
+            font-size: 16px;
             flex-shrink: 0;
         }
+        #${P} .h span   { font-size: 12px; }
+        #${P} .h button {
+            background: none; border: 0; border-radius: 4px;
+            padding: 4px 8px; font-size: 16px; line-height: 1;
+            color: inherit; cursor: pointer;
+        }
+        #${P} .h button:hover { background: rgba(255,255,255,.15); }
         #${P} .t {
-            padding: 6px 13px;
-            background: #f5f7fa;
-            border-bottom: 1px solid #ddd;
-            display: flex; flex-wrap: nowrap; gap: 5px; align-items: center;
+            padding: 8px 16px;
+            background: var(--bbp-paper);
+            border-bottom: 1px solid var(--bbp-divider);
+            display: flex; flex-wrap: nowrap; gap: 6px; align-items: center;
             flex-shrink: 0; overflow: hidden;
         }
         #${P} .t input, #${P} .t select {
-            padding: 3px 6px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 11px;
-            font-family: inherit;
+            height: 28px; min-height: 0; margin: 0;
+            padding: 0 8px;
+            border: 1px solid var(--bbp-muted);
+            border-radius: 4px;
+            background: var(--bbp-bg); color: var(--bbp-text);
+            font-size: 12px;
             min-width: 0;
         }
         #${P} .t input  { flex: 1; min-width: 80px; }
         #${P} .t select { flex-shrink: 0; max-width: 110px; }
+        /* Ultra forces appearance:none !important on selects, which hides the arrow */
+        #${P} .t select { appearance: auto !important; -webkit-appearance: menulist !important; }
         #${P} .t button {
-            padding: 5px 14px;
-            background: #0057a8; color: #fff;
-            border: none; border-radius: 3px;
-            font-size: 12px; font-weight: 700; cursor: pointer;
+            height: 28px; margin: 0;
+            padding: 0 14px;
+            background: var(--bbp-primary); color: var(--bbp-onPrimary);
+            border: 1px solid var(--bbp-primary); border-radius: 4px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
             white-space: nowrap; flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,.2);
         }
-        #${P} .t button:hover { background: #0073cc; }
-        #${P} .b  { flex: 1; overflow-y: scroll; padding: 10px 13px; }
+        #${P} .t button:hover { background: var(--bbp-primaryHover); }
+        #${P} .b  { flex: 1; overflow-y: scroll; padding: 10px 16px; }
         #${P} .dh {
-            font-size: 11px; font-weight: 700; color: #002447;
-            border-bottom: 2px solid #002447;
-            padding: 12px 0 4px; margin-bottom: 4px;
+            font-size: 12px; font-weight: 600; color: var(--bbp-text);
+            border-bottom: 2px solid var(--bbp-primary);
+            padding: 12px 0 4px; margin-bottom: 6px;
             display: flex; gap: 6px; align-items: baseline;
         }
-        #${P} .dh small { margin-left: auto; color: #aaa; font-weight: 400; }
+        #${P} .dh small { margin-left: auto; color: var(--bbp-muted); font-weight: 400; }
+        #${P} .dh .s    { font-weight: 400; font-family: ui-monospace, Consolas, monospace; font-size: 10px; color: var(--bbp-muted); }
         #${P} .r {
-            padding: 7px 10px;
-            border: 1px solid #ccc; border-radius: 4px;
-            margin-bottom: 7px;
+            padding: 8px 12px;
+            border: 1px solid var(--bbp-divider); border-radius: 4px;
+            margin-bottom: 6px;
             display: flex; gap: 10px;
-            background: #fff;
-            box-shadow: 0 1px 2px rgba(0,0,0,.06);
+            background: var(--bbp-bg);
         }
-        #${P} .r:hover  { border-color: #7aaddc; background: #f0f6ff; }
+        #${P} .r:hover  { border-color: var(--bbp-link); background: var(--bbp-paper); }
         #${P} .r .m     { flex: 1; min-width: 0; }
-        #${P} .r .n     { font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #${P} .r .n a   { color: inherit; text-decoration: none; }
-        #${P} .r .n a:hover { text-decoration: underline; }
+        #${P} .r .n     { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #${P} .r .n a   { color: var(--bbp-link); text-decoration: none; }
+        #${P} .r .n a:hover { color: var(--bbp-linkHover); text-decoration: underline; }
         #${P} .r .n img { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }
-        #${P} .r .d     { font-size: 11px; color: #888; }
-        #${P} .r .u     { font-size: 10px; color: #555; font-family: monospace; word-break: break-all; }
-        #${P} .r .g     { font-size: 10px; color: #999; }
-        #${P} .r .k     { font-size: 10px; color: #555; text-align: right; white-space: nowrap; flex-shrink: 0; }
-        #${P} .v        { display: inline-block; padding: 0 5px; border-radius: 3px; font-size: 10px; font-weight: 700; color: #fff; background: #888; }
-        #${P} .v13      { background: #1a7f37; }
-        #${P} .v11      { background: #b26b00; }
-        #${P} .ft       { padding: 5px 13px; border-top: 1px solid #eee; font-size: 10px; color: #aaa; flex-shrink: 0; }
+        #${P} .r .d     { font-size: 12px; color: var(--bbp-muted); }
+        #${P} .r .u     { font-size: 10px; color: var(--bbp-muted); font-family: ui-monospace, Consolas, monospace; word-break: break-all; }
+        #${P} .r .g     { font-size: 11px; color: var(--bbp-muted); }
+        #${P} .r .k     { font-size: 11px; color: var(--bbp-muted); text-align: right; white-space: nowrap; flex-shrink: 0; }
+        #${P} .v        { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 10px; font-weight: 600; color: #fff; background: var(--bbp-muted); }
+        #${P} .v13      { background: var(--bbp-success); }
+        #${P} .v11      { background: var(--bbp-warning); }
+        #${P} .er       { color: var(--bbp-error); }
+        #${P} .ft       { padding: 6px 16px; border-top: 1px solid var(--bbp-divider); font-size: 11px; color: var(--bbp-muted); flex-shrink: 0; }
     `;
 
     // ── Panel HTML ────────────────────────────────────────────────────────────
@@ -104,7 +153,7 @@
             <b>LTI Placements</b>
             <div style="display:flex;align-items:center;gap:10px">
                 <span id=lpc></span>
-                <button onclick="document.getElementById('${ID}').remove()">✕</button>
+                <button aria-label="Close" onclick="document.getElementById('${ID}').remove()">✕</button>
             </div>
         </div>
         <div class=t>
@@ -229,7 +278,7 @@
                 const header = `<div class=dh>
                     ${vb(id)}
                     <span>${esc(n)}</span>
-                    ${s ? `<span style="font-weight:400;font-family:monospace;font-size:10px;color:#aaa">${esc(s)}</span>` : ""}
+                    ${s ? `<span class=s>${esc(s)}</span>` : ""}
                     <small>${items.length}p</small>
                 </div>`;
                 const rows = items
@@ -301,7 +350,7 @@
         lpf.textContent = `${O} · ${new Date().toLocaleString()}`;
         refresh();
     }).catch(e => {
-        lpb.innerHTML = `<span style=color:red><b>Error:</b> ${esc(e.message)}</span>`;
+        lpb.innerHTML = `<span class=er><b>Error:</b> ${esc(e.message)}</span>`;
     });
 
 })();
