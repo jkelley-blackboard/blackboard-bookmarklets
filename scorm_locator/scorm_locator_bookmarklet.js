@@ -23,6 +23,35 @@
   // ── Helpers ───────────────────────────────────────────────────────────────
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  // Ultra publishes its MUI theme as --palette-* custom properties on the top page's :root.
+  // Read the resolved values from there (Original admin iframes don't have them) and fall back
+  // to Ultra's default theme when a token is missing.
+  const getUltraTheme = doc => {
+    let cs = null;
+    try { cs = window.top.getComputedStyle(window.top.document.documentElement); } catch (e) { /* cross-origin top */ }
+    cs = cs || doc.defaultView.getComputedStyle(doc.documentElement);
+    const tok = (name, fallback) => {
+      const v = cs.getPropertyValue(`--${name}`).trim();
+      return v && !/[;{}<>]/.test(v) ? v : fallback;
+    };
+    return {
+      text: tok('palette-text-primary', '#262626'),
+      muted: tok('palette-text-secondary', '#666666'),
+      bg: tok('palette-background-default', '#ffffff'),
+      paper: tok('palette-background-paper', '#f8f8f8'),
+      divider: tok('palette-divider', 'rgba(0,0,0,.12)'),
+      primary: tok('palette-primary-main', '#262626'),
+      primaryHover: tok('palette-primary-light', '#404040'),
+      onPrimary: tok('palette-primary-contrastText', '#ffffff'),
+      link: tok('palette-link-active', '#2073a1'),
+      linkHover: tok('palette-link-hover', '#004270'),
+      focus: tok('palette-focus-main', '#006dc7'),
+      success: tok('palette-success-main', '#007d2c'),
+      error: tok('palette-error-main', '#c23e37'),
+      shadow: tok('shadows-8', '0 5px 5px -3px rgba(0,0,0,.2),0 8px 10px 1px rgba(0,0,0,.14),0 3px 14px 2px rgba(0,0,0,.12)')
+    };
+  };
+
   const ensurePanel = (doc, options = {}) => {
     const panelId = options.id || 'cmpPanel';
     let panel = doc.getElementById(panelId);
@@ -35,11 +64,32 @@
     }
     panel = doc.createElement('div');
     panel.id = panelId;
-    panel.style.cssText = 'position:fixed;top:20px;left:20px;z-index:2147483647;background:#fffbe6;border:3px solid #111;border-radius:8px;padding:12px;min-width:380px;max-width:min(960px,94vw);max-height:72vh;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.25);font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111';
+    // Theme tokens become --bbp-* properties on the panel, so tool markup can use var(--bbp-muted) etc.
+    const vars = Object.entries(getUltraTheme(doc)).map(([k, v]) => `--bbp-${k}:${v}`).join(';');
+    panel.style.cssText = `${vars};position:fixed;top:20px;left:20px;z-index:2147483647;background:var(--bbp-bg);color:var(--bbp-text);border:1px solid var(--bbp-divider);border-radius:8px;padding:16px;min-width:380px;max-width:min(960px,94vw);max-height:72vh;overflow:auto;box-shadow:var(--bbp-shadow);font:14px/1.43 'Open Sans',sans-serif;text-align:left`;
     const title = options.title || 'Bookmarklet Panel';
-    panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-weight:600">${esc(title)}</span><button id="${panelId}-close" class="cmp-btn" style="background:#111;color:#fff;padding:2px 8px;border-radius:6px">✕</button></div><div id="pageContextTop" style="border:1px solid #e5e7eb;background:#fff;padding:6px;border-radius:6px;margin:6px 0;max-height:120px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.35"></div><div id="buttonRowPrimary" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div><div id="summary" style="margin-top:6px;font-weight:500"></div>`;
+    panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px"><span style="font-weight:600;font-size:16px">${esc(title)}</span><button id="${panelId}-close" class="cmp-close" aria-label="Close">✕</button></div><div id="pageContextTop" style="border:1px solid var(--bbp-divider);background:var(--bbp-paper);padding:8px 12px;border-radius:4px;margin:8px 0;max-height:120px;overflow:auto;font-size:13px"></div><div id="buttonRowPrimary" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"></div><div id="summary" style="margin-top:8px;font-weight:600"></div>`;
+    const p = `#${panelId}`;
     const style = doc.createElement('style');
-    style.textContent = `#${panelId} .cmp-srcline{white-space:pre-wrap;word-break:break-word} #${panelId} button.cmp-btn{margin:0;padding:6px 10px;font-size:13px;border-radius:6px;border:1px solid #5b21b6;background:#7c3aed;color:#fff;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06)} #${panelId} button.cmp-btn:hover{filter:brightness(1.05)}`;
+    style.textContent = [
+      `${p},${p} *{box-sizing:border-box}`,
+      `${p} button{font:inherit}`,
+      `${p} button.cmp-btn{margin:0;padding:6px 12px;font-weight:600;line-height:1.43;border-radius:4px;border:1px solid var(--bbp-primary);background:var(--bbp-primary);color:var(--bbp-onPrimary);cursor:pointer}`,
+      `${p} button.cmp-btn:hover:not(:disabled){background:var(--bbp-primaryHover)}`,
+      `${p} button.cmp-btn-outline{background:transparent;color:var(--bbp-primary)}`,
+      `${p} button.cmp-btn-outline:hover:not(:disabled){background:var(--bbp-paper)}`,
+      `${p} button.cmp-btn-sm{padding:2px 8px;font-size:12px}`,
+      `${p} button:disabled{opacity:.5;cursor:default}`,
+      `${p} :focus-visible{outline:2px solid var(--bbp-focus);outline-offset:2px}`,
+      `${p} .cmp-close{background:none;border:0;border-radius:4px;padding:4px 8px;font-size:16px;line-height:1;color:var(--bbp-muted);cursor:pointer}`,
+      `${p} .cmp-close:hover{background:var(--bbp-paper);color:var(--bbp-text)}`,
+      `${p} a.cmp-link{color:var(--bbp-link);font-weight:600;text-decoration:underline;margin-right:12px}`,
+      `${p} a.cmp-link:hover{color:var(--bbp-linkHover)}`,
+      `${p} .cmp-card{border:1px solid var(--bbp-divider);background:var(--bbp-bg);border-radius:4px;padding:8px 12px;margin:8px 0}`,
+      `${p} .cmp-muted{color:var(--bbp-muted);font-size:12px}`,
+      `${p} .cmp-mono{font-family:ui-monospace,Consolas,monospace;font-size:11px}`,
+      `${p} .cmp-srcline{white-space:pre-wrap;word-break:break-word}`
+    ].join('');
     panel.appendChild(style);
     doc.body.appendChild(panel);
     panel.querySelector(`#${panelId}-close`).onclick = () => panel.remove();
@@ -252,11 +302,11 @@
     if (!rows.length) {
       list.innerHTML = '<p style="margin:8px 0">No SCORM items found in this course.</p>';
     } else {
-      const link = (href, label) => `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#5b21b6;font-weight:600;margin-right:12px">${label}</a>`;
-      list.innerHTML = rows.map(r => `<div style="border:1px solid #e5e7eb;background:#fff;border-radius:6px;padding:8px;margin:8px 0"><div style="font-weight:600">${esc(r.title)}</div><div style="font-size:12px;color:#555;margin:2px 0 6px">${esc(r.path)} · ${esc(r.id)} · Available: ${esc(r.available)}</div><div>${hasAccess ? link(r.folderUrl, '📂 Package folder') + link(r.manifestUrl, '📄 imsmanifest.xml') : ''}${r.previewUrl ? link(r.previewUrl, '▶ Preview') : ''}${hasAccess ? `<button class="cmp-btn" data-dl="${esc(r.id)}" style="padding:2px 8px;font-size:12px">⬇ Download zip</button> <span data-status="${esc(r.id)}" style="font-size:12px;color:#555"></span>` : ''}</div>${hasAccess ? `<div class="cmp-srcline" style="font-family:ui-monospace,Consolas,monospace;font-size:11px;color:#333;margin-top:4px">${esc(r.folderUrl)}</div>` : ''}</div>`).join('') +
+      const link = (href, label) => `<a class="cmp-link" href="${esc(href)}" target="_blank" rel="noopener">${label}</a>`;
+      list.innerHTML = rows.map(r => `<div class="cmp-card"><div style="font-weight:600">${esc(r.title)}</div><div class="cmp-muted" style="margin:2px 0 6px">${esc(r.path)} · ${esc(r.id)} · Available: ${esc(r.available)}</div><div style="display:flex;flex-wrap:wrap;align-items:center;row-gap:4px">${hasAccess ? link(r.folderUrl, '📂 Package folder') + link(r.manifestUrl, '📄 imsmanifest.xml') : ''}${r.previewUrl ? link(r.previewUrl, '▶ Preview') : ''}${hasAccess ? `<button class="cmp-btn cmp-btn-outline cmp-btn-sm" data-dl="${esc(r.id)}">⬇ Download zip</button><span class="cmp-muted" data-status="${esc(r.id)}" style="margin-left:8px"></span>` : ''}</div>${hasAccess ? `<div class="cmp-srcline cmp-mono cmp-muted" style="margin-top:4px">${esc(r.folderUrl)}</div>` : ''}</div>`).join('') +
         (hasAccess
-          ? `<p style="font-size:12px;color:#555;margin:8px 0 0"><b>Download zip</b> fetches the package straight from the Content Collection (same as selecting all files in the package folder and choosing <b>Download Package</b>). The zip has imsmanifest.xml at its root and can be re-uploaded as is. All SCORM folders for this course: <a href="${esc(parentFolderUrl)}" target="_blank" rel="noopener" style="color:#5b21b6">${esc(parentFolderUrl)}</a></p>`
-          : `<p style="font-size:12px;color:#555;margin:8px 0 0">Package folders and downloads are hidden because your account can't open this course's internal Content Collection area. Ask a System Admin to run this bookmarklet to recover the packages.</p>`);
+          ? `<p class="cmp-muted" style="margin:8px 0 0"><b>Download zip</b> fetches the package straight from the Content Collection (same as selecting all files in the package folder and choosing <b>Download Package</b>). The zip has imsmanifest.xml at its root and can be re-uploaded as is. All SCORM folders for this course: <a class="cmp-link" href="${esc(parentFolderUrl)}" target="_blank" rel="noopener">${esc(parentFolderUrl)}</a></p>`
+          : `<p class="cmp-muted" style="margin:8px 0 0">Package folders and downloads are hidden because your account can't open this course's internal Content Collection area. Ask a System Admin to run this bookmarklet to recover the packages.</p>`);
     }
 
     const btnRow = panel.querySelector('#buttonRowPrimary');

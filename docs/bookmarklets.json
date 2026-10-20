@@ -116,6 +116,6 @@
     "description": "Lists every SCORM item in an Ultra course with links to the Content Collection folders holding its package files",
     "path": "scorm_locator/scorm_locator_bookmarklet.min.bk.js",
     "category": "Other Tools",
-    "lastUpdated": "2026-10-19"
+    "lastUpdated": "2026-10-20"
   }
 ]

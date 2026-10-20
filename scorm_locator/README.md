@@ -75,7 +75,7 @@ scorm_locator/
 - **Instructors and `/courses/1/`:** the SCORM player loads package files from `/courses/1/<Course ID>/content/<content ID>/...`, the legacy content path that now aliases Content Collection files. Course members can read individual files there, but can't list the folder (403), so the manifest is the only file list available to them. A rebuilt-from-manifest download for instructors was considered and left out: it would be incomplete for packages whose manifest doesn't list every file.
 - **Download zip** reproduces the Content Collection's Download Package action (`dirList.downloadFiles` in `dirlist.js`): it GETs the package folder, copies the hidden fields of `filesForm` (including its single-use nonce) plus every `fileN` checkbox value, sets `a1=download` and `subaction=zip`, and POSTs to `<folder URL>.zip`. The folder page is fetched fresh for every download because the nonce can't be reused. **All packages** runs the downloads sequentially.
 - No literal percent-escapes appear in the source, because bookmarks percent-decode the code before running it; the encoding is done at runtime with `encodeURIComponent`.
-- Uses the shared `esc()`, `ensurePanel()` and `addBtn()` helpers from [SHARED_FUNCTIONS.md](../SHARED_FUNCTIONS.md).
+- Uses the shared `esc()`, `getUltraTheme()`, `ensurePanel()` and `addBtn()` helpers from [SHARED_FUNCTIONS.md](../SHARED_FUNCTIONS.md). The panel takes its colors, font and shadow from Ultra's theme tokens, with Ultra's default theme as the fallback.
 
 ---
 
