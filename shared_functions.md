@@ -167,14 +167,63 @@ const getPageContext = async (doc) => {
 
 **Purpose:** Provide a reusable, consistent floating UI panel for displaying information, status summaries, and interactive buttons within Blackboard pages.
 
-This panel is ideal for bookmarklets that need a simple control interface or visual feedback without disrupting the Blackboard layout.
+The panel takes its colors, font, and shadow from the Ultra theme (see 6.1), so it looks native to Blackboard LMS without depending on Ultra's build-generated class names.
 
 ---
 
-### 6.1 ensurePanel(doc, options)
+### 6.1 getUltraTheme(doc)
+
+**Purpose:** Read the Ultra theme's design tokens so bookmarklet UI matches the page.
+
+Ultra is built on MUI and publishes its theme as CSS custom properties (`--palette-*`, `--shadows-*`) on the top page's `:root`. Original-experience pages inside the admin iframe don't have them, so the values are read from `window.top` and resolved to plain values, which work in any document. Every token has a fallback (Ultra's default theme), so a renamed or missing token degrades to today's look instead of breaking.
+
+**Parameters:**
+
+- `doc` *(Document)* — The document the panel will live in (fallback source if `window.top` can't be read).
+
+**Returns:** An object of resolved CSS values: `text`, `muted`, `bg`, `paper`, `divider`, `primary`, `primaryHover`, `onPrimary`, `link`, `linkHover`, `focus`, `success`, `error`, `shadow`.
+
+**Notes:**
+
+- The institution's custom theme color (`--bb-theme-primary-color`) only exists inside the theme editor's preview, so it isn't available here.
+- Values containing `;`, `{`, `}`, `<` or `>` are rejected in favor of the fallback, since they're written into a style attribute.
+
+**Code:**
+
+```js
+const getUltraTheme = doc => {
+  let cs = null;
+  try { cs = window.top.getComputedStyle(window.top.document.documentElement); } catch (e) { /* cross-origin top */ }
+  cs = cs || doc.defaultView.getComputedStyle(doc.documentElement);
+  const tok = (name, fallback) => {
+    const v = cs.getPropertyValue(`--${name}`).trim();
+    return v && !/[;{}<>]/.test(v) ? v : fallback;
+  };
+  return {
+    text: tok('palette-text-primary', '#262626'),
+    muted: tok('palette-text-secondary', '#666666'),
+    bg: tok('palette-background-default', '#ffffff'),
+    paper: tok('palette-background-paper', '#f8f8f8'),
+    divider: tok('palette-divider', 'rgba(0,0,0,.12)'),
+    primary: tok('palette-primary-main', '#262626'),
+    primaryHover: tok('palette-primary-light', '#404040'),
+    onPrimary: tok('palette-primary-contrastText', '#ffffff'),
+    link: tok('palette-link-active', '#2073a1'),
+    linkHover: tok('palette-link-hover', '#004270'),
+    focus: tok('palette-focus-main', '#006dc7'),
+    success: tok('palette-success-main', '#007d2c'),
+    error: tok('palette-error-main', '#c23e37'),
+    shadow: tok('shadows-8', '0 5px 5px -3px rgba(0,0,0,.2),0 8px 10px 1px rgba(0,0,0,.14),0 3px 14px 2px rgba(0,0,0,.12)')
+  };
+};
+```
+
+---
+
+### 6.2 ensurePanel(doc, options)
 
 **Purpose:** Create or reset a floating control panel on the page.  
-If an existing panel with the same ID is found, it resets its content; otherwise, it builds a new one.
+If an existing panel with the same ID is found, it resets its content; otherwise, it builds a new one, themed with `getUltraTheme()`.
 
 **Parameters:**
 
@@ -183,13 +232,29 @@ If an existing panel with the same ID is found, it resets its content; otherwise
   - `title` *(string)* — Panel title (default: `"Bookmarklet Panel"`).
   - `id` *(string)* — DOM ID for the panel (default: `"cmpPanel"`).
 
-**Returns:** The panel element.
+**Returns:** The panel element, containing `#pageContextTop` (context box), `#buttonRowPrimary` (button row) and `#summary` (status line).
+
+**Theme variables:** each token is set on the panel as `--bbp-<token>` (for example `--bbp-muted`, `--bbp-success`), so tool markup can use `style="color:var(--bbp-error)"` without hard-coding colors.
+
+**Helper classes** (scoped to the panel):
+
+| Class | Use |
+|-------|-----|
+| `cmp-btn` | Primary (filled) button; `addBtn()` applies it |
+| `cmp-btn-outline` | Add to `cmp-btn` for a secondary (outlined) button |
+| `cmp-btn-sm` | Add to `cmp-btn` for a compact button inside a list row |
+| `cmp-link` | Ultra-style link |
+| `cmp-card` | Bordered row/card for list items |
+| `cmp-muted` | Secondary text, 12px |
+| `cmp-mono` | Monospace, 11px (URLs, IDs) |
+| `cmp-srcline` | Wraps long lines |
 
 **Example usage:**
 ```js
 const panel = ensurePanel(doc, { title: 'Course Sync Utility' });
 const btnRow = panel.querySelector('#buttonRowPrimary');
 addBtn(doc, btnRow, 'Run Sync', () => alert('Running...'));
+panel.insertAdjacentHTML('beforeend', `<div class="cmp-card"><b>${esc(name)}</b> <span class="cmp-muted">${esc(id)}</span></div>`);
 ```
 
 **Code:**
@@ -204,70 +269,51 @@ const ensurePanel = (doc, options = {}) => {
     if (summary) summary.textContent = '';
     return panel;
   }
-
   panel = doc.createElement('div');
   panel.id = panelId;
-  panel.style.cssText = `
-    position:fixed;
-    top:20px;
-    left:20px;
-    z-index:2147483647;
-    background:#fffbe6;
-    border:3px solid #111;
-    border-radius:8px;
-    padding:12px;
-    min-width:380px;
-    max-height:72vh;
-    overflow:auto;
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
-    font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  `;
-
+  // Theme tokens become --bbp-* properties on the panel, so tool markup can use var(--bbp-muted) etc.
+  const vars = Object.entries(getUltraTheme(doc)).map(([k, v]) => `--bbp-${k}:${v}`).join(';');
+  panel.style.cssText = `${vars};position:fixed;top:20px;left:20px;z-index:2147483647;background:var(--bbp-bg);color:var(--bbp-text);border:1px solid var(--bbp-divider);border-radius:8px;padding:16px;min-width:380px;max-width:min(960px,94vw);max-height:72vh;overflow:auto;box-shadow:var(--bbp-shadow);font:14px/1.43 'Open Sans',sans-serif;text-align:left`;
   const title = options.title || 'Bookmarklet Panel';
-  panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <span style="font-weight:600">${title}</span>
-      <button id="${panelId}-close" class="cmp-btn" style="background:#111;color:#fff;padding:2px 8px;border-radius:6px">✕</button>
-    </div>
-    <div id="pageContextTop" style="border:1px solid #e5e7eb;background:#fff;padding:6px;border-radius:6px;margin:6px 0;max-height:120px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:12px;line-height:1.35"></div>
-    <div id="buttonRowPrimary" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"></div>
-    <div id="summary" style="margin-top:6px;font-weight:500"></div>
-  `;
-
+  panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px"><span style="font-weight:600;font-size:16px">${esc(title)}</span><button id="${panelId}-close" class="cmp-close" aria-label="Close">✕</button></div><div id="pageContextTop" style="border:1px solid var(--bbp-divider);background:var(--bbp-paper);padding:8px 12px;border-radius:4px;margin:8px 0;max-height:120px;overflow:auto;font-size:13px"></div><div id="buttonRowPrimary" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"></div><div id="summary" style="margin-top:8px;font-weight:600"></div>`;
+  const p = `#${panelId}`;
   const style = doc.createElement('style');
-  style.textContent = `
-    #${panelId} .cmp-srcline {
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    #${panelId} button.cmp-btn {
-      margin:0;
-      padding:6px 10px;
-      font-size:13px;
-      border-radius:6px;
-      border:1px solid #5b21b6;
-      background:#7c3aed;
-      color:#fff;
-      cursor:pointer;
-      box-shadow:0 1px 2px rgba(0,0,0,.06);
-    }
-    #${panelId} button.cmp-btn:hover {
-      filter:brightness(1.05);
-    }
-  `;
+  style.textContent = [
+    `${p},${p} *{box-sizing:border-box}`,
+    `${p} button{font:inherit}`,
+    `${p} button.cmp-btn{margin:0;padding:6px 12px;font-weight:600;line-height:1.43;border-radius:4px;border:1px solid var(--bbp-primary);background:var(--bbp-primary);color:var(--bbp-onPrimary);cursor:pointer}`,
+    `${p} button.cmp-btn:hover:not(:disabled){background:var(--bbp-primaryHover)}`,
+    `${p} button.cmp-btn-outline{background:transparent;color:var(--bbp-primary)}`,
+    `${p} button.cmp-btn-outline:hover:not(:disabled){background:var(--bbp-paper)}`,
+    `${p} button.cmp-btn-sm{padding:2px 8px;font-size:12px}`,
+    `${p} button:disabled{opacity:.5;cursor:default}`,
+    `${p} :focus-visible{outline:2px solid var(--bbp-focus);outline-offset:2px}`,
+    `${p} .cmp-close{background:none;border:0;border-radius:4px;padding:4px 8px;font-size:16px;line-height:1;color:var(--bbp-muted);cursor:pointer}`,
+    `${p} .cmp-close:hover{background:var(--bbp-paper);color:var(--bbp-text)}`,
+    `${p} a.cmp-link{color:var(--bbp-link);font-weight:600;text-decoration:underline;margin-right:12px}`,
+    `${p} a.cmp-link:hover{color:var(--bbp-linkHover)}`,
+    `${p} .cmp-card{border:1px solid var(--bbp-divider);background:var(--bbp-bg);border-radius:4px;padding:8px 12px;margin:8px 0}`,
+    `${p} .cmp-muted{color:var(--bbp-muted);font-size:12px}`,
+    `${p} .cmp-mono{font-family:ui-monospace,Consolas,monospace;font-size:11px}`,
+    `${p} .cmp-srcline{white-space:pre-wrap;word-break:break-word}`
+  ].join('');
   panel.appendChild(style);
   doc.body.appendChild(panel);
-
   panel.querySelector(`#${panelId}-close`).onclick = () => panel.remove();
-
   panel.style.left = (doc.defaultView.innerWidth - panel.offsetWidth) / 2 + 'px';
   return panel;
 };
 ```
 
+**Notes:**
+
+- Requires `esc()` (section 1) and `getUltraTheme()` (section 6.1).
+- Each CSS rule is a single-line string, so minification can't break it.
+- Older bookmarklets still embed the previous yellow/purple version of this helper; they'll be moved to this one over time.
+
 ---
 
-### 6.2 addBtn(doc, wrap, label, fn, id)
+### 6.3 addBtn(doc, wrap, label, fn, id)
 
 **Purpose:** Add a styled button to a specified container in the floating panel.
 
