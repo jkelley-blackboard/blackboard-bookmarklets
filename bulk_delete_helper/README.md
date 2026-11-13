@@ -10,9 +10,10 @@ Based on a bookmarklet by Bradley Lawton, shared with the Blackboard community.
 
 - Selects every option on the Bulk Delete page and fills in the `Delete` confirmation
 - Shows the target course (Course ID, name and primary key) from the REST API, so you can confirm you are on the right course
-- Lists each selected option by its on-page label, with a count
+- Lists each selected option by its on-page label, grouped into **Content areas** (named after the course's own menu, such as Information and Content) and **Other materials** (Announcements, Users, Groups and so on), with counts
+- Warns when **Users** is selected, because that also removes every enrollment from the course
 - **Undo:** restores the selections and the confirmation box to how they were before the bookmarklet ran
-- Leaves focus in the confirmation box, so pressing Enter submits, or click **Submit** on the page
+- Brings the confirmation box into view; nothing is deleted until you click **Submit** at the bottom right of the page
 - Runs only on the Bulk Delete page; anywhere else it shows a message and changes nothing
 
 ---
@@ -31,12 +32,14 @@ Based on a bookmarklet by Bradley Lawton, shared with the Blackboard community.
 2. Go to **Administrator Panel > Courses** and search for the course.
 3. Open the course's menu and choose **Bulk Delete**.
 4. Click the bookmarklet. The panel shows the course and the options it selected.
-5. Check the course and the list. To back out, click **Undo** or simply leave the page.
-6. Press **Enter** in the confirmation box, or click **Submit** on the page, to run the delete.
+5. Check the course and the list. To keep something, untick it on the page. To back out completely, click **Undo** or simply leave the page.
+6. Click **Submit** at the bottom right of the page to run the delete. (The cursor is left in the confirmation box, so pressing the Enter key on your keyboard does the same.)
 
 ### Notes & Troubleshooting
 
 - **Deletion is permanent.** Bulk Delete removes course content and it cannot be restored. Test in a non-production environment first, and run the bookmarklet only on courses you mean to empty.
+- **Users removes enrollments.** Selecting every option includes **Users**, which removes every enrollment from the course. Untick it on the page before submitting if the enrollments should stay.
+- **Content area names vary by course.** Content areas are listed under the names in the course's own menu (for example Information and Content). Ultra courses show their internal areas as ROOT, INTERACTIVE and INDIRECT.
 - **"Please open the course Bulk Delete page first":** the bookmarklet only runs on `/webapps/blackboard/execute/recycler` with `sourceType=COURSES`, and only when the page has its option checkboxes and confirmation box. Open Bulk Delete from the course's menu in **Administrator Panel > Courses** and run it again.
 - **Course name not shown:** the name comes from the REST API using `course_id` in the page address. If the lookup fails, the panel shows the primary key only; check the course named on the page before submitting, and see the browser console for the error.
 - **Some options were not selected:** options the page has disabled are left alone.
@@ -61,6 +64,8 @@ bulk_delete_helper/
 - **Form changes:** each checkbox is set with `checked = true` and the confirmation with `value = 'Delete'`, and each change dispatches `change` (and `input` for the text box) so any page script listening for them sees the update. The original values are kept for **Undo**.
 - **Course context:** `GET /learn/api/public/v1/courses/{course_id}?fields=courseId,name`, sent only when `course_id` looks like a primary key (`_123_1`).
 - **Option labels:** taken from `label[for=<checkbox id>]`, then the enclosing `label`, then the enclosing row, falling back to the checkbox value.
+- **Grouping:** a checkbox whose value is a primary key (`_123_1`) is a content area; any other value (`ANNOUNCMENTS`, `USERS`, `GROUPS` and so on) is an other material. The Users warning appears when the `USERS` option is selected.
+- **Tested** in the Ultra admin frame on an Original course and with the page opened directly on an Ultra course (2026-11-13).
 - **Attribution:** the one-click approach (select all options, fill the confirmation, let the administrator submit) comes from Bradley Lawton's original bookmarklet. This version adds the page guard, the course confirmation, the option list, Undo and the native panel.
 - Uses the shared `esc()`, `getAdminFrameDocument()`, `getUltraTheme()`, `ensurePanel()` and `addBtn()` helpers from [SHARED_FUNCTIONS.md](../SHARED_FUNCTIONS.md). The panel takes its colors, font and shadow from Ultra's theme tokens, with Ultra's default theme as the fallback.
 

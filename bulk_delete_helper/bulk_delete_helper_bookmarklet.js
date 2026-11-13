@@ -3,7 +3,7 @@
  *
  * Description: Prepares the course Bulk Delete page in one click: selects every delete option
  *   and types "Delete" in the confirmation box, then shows a panel listing the target course and
- *   each option it selected, so the administrator can review before pressing Enter or Submit.
+ *   each option it selected, so the administrator can review before clicking Submit.
  *   Nothing is submitted by the bookmarklet. Useful when a term purge leaves straggler courses
  *   that won't delete until their content is removed. Based on a bookmarklet by Bradley Lawton,
  *   shared with the Blackboard community.
@@ -180,16 +180,28 @@
     ? `<div><b>Course:</b> ${esc(course.courseId)} <span class="cmp-muted">(${esc(pk)})</span></div><div>${esc(course.name)}</div>`
     : `<div><b>Course:</b> ${pk ? esc(pk) : 'not shown in the page address'}</div><div class="cmp-muted">Course name lookup failed. Check the course named on the page before submitting.</div>`;
 
+  // Content areas are listed by their primary key (value _123_1) and labeled with the course's
+  // own menu names (Information, Content, or ROOT/INTERACTIVE/INDIRECT in Ultra courses);
+  // everything else is a fixed material type such as ANNOUNCMENTS or USERS.
+  const isArea = cb => /^_\d+_\d+$/.test(cb.value);
+  const areas = boxes.filter(isArea);
+  const others = boxes.filter(cb => !isArea(cb));
+  const group = (title, items) => items.length
+    ? `<div style="font-weight:600;margin:6px 0 2px">${esc(title)} (${items.length})</div>` + items.map(cb => `<div class="cmp-srcline">☑ ${esc(labelFor(cb))}</div>`).join('')
+    : '';
   const list = doc.createElement('div');
   list.className = 'cmp-card bdh-extra';
   list.innerHTML = `<div style="font-weight:600;margin-bottom:4px">Selected for deletion (${boxes.length})</div>`
-    + boxes.map(cb => `<div class="cmp-srcline">☑ ${esc(labelFor(cb))}</div>`).join('');
+    + group('Content areas', areas)
+    + group('Other materials', others);
   row.before(list);
 
+  const usersSelected = others.some(cb => cb.value === 'USERS');
   const note = doc.createElement('div');
   note.className = 'bdh-extra';
   note.style.cssText = 'color:var(--bbp-error);font-weight:600;margin:8px 0';
-  note.textContent = 'Deleted course content cannot be restored. Try this in a test environment first.';
+  note.innerHTML = 'Deleted course content cannot be restored. Try this in a test environment first.'
+    + (usersSelected ? '<div style="margin-top:4px">Users is selected: this also removes every enrollment from the course. Untick Users on the page to keep them.</div>' : '');
   row.before(note);
 
   const credit = doc.createElement('div');
@@ -198,7 +210,7 @@
   credit.textContent = 'Based on a bookmarklet by Bradley Lawton, shared with the Blackboard community.';
   panel.appendChild(credit);
 
-  summary.innerHTML = `<span style="color:var(--bbp-success)">Ready.</span> Review the list, then press Enter in the confirmation box or click Submit on the page.`;
+  summary.innerHTML = `<span style="color:var(--bbp-success)">Ready.</span> Review the list, then click <b>Submit</b> at the bottom right of the page to delete. Nothing is deleted until you do.`;
 
   addBtn(doc, row, 'Undo', () => {
     boxes.forEach((cb, i) => setChecked(cb, before[i]));
@@ -208,7 +220,8 @@
     note.remove();
   }, 'bdhUndo').classList.add('cmp-btn-outline');
 
-  // Leave focus in the confirmation box so Enter submits, as in the original bookmarklet.
+  // Bring the confirmation box and the Submit button into view. Focus stays in the confirmation
+  // box, so pressing the Enter key also submits, as in the original bookmarklet.
   confirmation.focus();
   confirmation.scrollIntoView({ block: 'center' });
 })();
