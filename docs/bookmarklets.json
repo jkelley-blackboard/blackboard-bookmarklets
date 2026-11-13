@@ -117,5 +117,12 @@
     "path": "scorm_locator/scorm_locator_bookmarklet.min.bk.js",
     "category": "Other Tools",
     "lastUpdated": "2026-10-20"
+  },
+  {
+    "label": "Bb Bulk Delete Helper",
+    "description": "Selects every option on a course's Bulk Delete page and fills in the confirmation, then lists them for review before you submit",
+    "path": "bulk_delete_helper/bulk_delete_helper_bookmarklet.min.bk.js",
+    "category": "Other Tools",
+    "lastUpdated": "2026-11-13"
   }
 ]
